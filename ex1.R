@@ -30,19 +30,37 @@ has_loc <- hasLocality(state)
 # tax <- dat %>% mutate(net(gross,fTax,sTax,lTax,has_loc))
 # tax <- sapply(dat[,4],net)
 # tax <- sapply(dat[,4],function(x,a,b,c,d) net(x,a,b,c,d), a=fTax,b=sTax,c=lTax,d=has_loc)
-df <- read.csv("pay.csv")
-df2 <- df
-df2[,4] <- as.numeric(df[,4])
-dat <- tbl_df(read.csv("pay.csv",
+
+# This is a starter "input file"
+dat <- tbl_df(read.csv("mthpay.csv",
                        stringsAsFactors=FALSE))
 
-dat <- dat %>% mutate(tsp = pmin(gross * tsp_trad,tsp_lim))
-dummy <- as.data.frame(dat[,4])
-dat <- bind_cols(dat,dummy,dummy,dummy,dummy,dummy,dummy,dummy)
-names(dat)[6:12] <- c("net","tsp_bal","pens_eo","pens_57","pens_60","pens_62","ss")
-for(i in 1:dim(dat)[1]){
+# Calculate net income
+net <- mapply(net, as.list(dat$gross),
+              replicate(nrow(dat), list(fTax)),
+              replicate(nrow(dat), list(sTax)),
+              replicate(nrow(dat), list(lTax)),
+              replicate(nrow(dat), list(has_loc)),
+              as.list(dat$tsp)
+)
+
+dat <- bind_cols(dat, as.data.frame(net))
+
+# Create TSP contribution data based on minimum contributions
+dat <-
+    dat %>%
+    mutate(tsp = pmin(gross * tsp_trad,tsp_lim)) %>%
+    # Create additional data fields for sensitivity study
+    mutate(tsp_bal = gross,
+           pens_eo = gross,
+           pens_57 = gross,
+           pens_60 = gross,
+           pens_62 = gross,
+           ss      = gross)
+
+for(i in 1:nrow(dat)){
     #Post-tax and post-TSP contribution income
-    dat[i,6] <- net(dat$gross[i],fTax,sTax,lTax,has_loc,dat$tsp[i])
+    # dat[i,6] <- net(dat$gross[i],fTax,sTax,lTax,has_loc,dat$tsp[i])
     #TSP Balance assumed inflation adjusted rate of return equal to ret
     if(i>1){
         dat$tsp_bal[i] <- dat$tsp[i-1] + dat$tsp_bal[i-1]*(1+ret)+
@@ -105,7 +123,7 @@ for(i in 1:dim(dat)[1]){
     }
 }
 
-pdf("working.pdf",height=22,width=17)
+pdf("mth_dat.pdf",height=22,width=17)
 grid.table(round(dat,2))
 dev.off()
 
@@ -173,7 +191,7 @@ for(i in 1:(101-r_dat$age)){
     }
 }
 dat_r <- data.frame(age,gross,net,pens,ss,tsp_bal)
-pdf("retired.pdf",height=15,width=8.5)
+pdf("mth_dat2.pdf",height=15,width=8.5)
 grid.table(round(dat_r,2))
 dev.off()
 
