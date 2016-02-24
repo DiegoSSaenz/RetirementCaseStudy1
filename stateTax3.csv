@@ -1,0 +1,422 @@
+state,type,rate,bracket,cumBracket
+Alabama,single,0.02,500,500
+Alabama,single,0.04,3000,3500
+Alabama,single,0.05,Inf,Inf
+Alabama,joint,0.02,1000,1000
+Alabama,joint,0.04,6000,7000
+Alabama,joint,0.05,Inf,Inf
+Alaska,single,0,Inf,Inf
+Alaska,joint,0,Inf,Inf
+Arizona,single,0.0259,10000,10000
+Arizona,single,0.0288,25000,35000
+Arizona,single,0.0336,50000,85000
+Arizona,single,0.0424,150000,235000
+Arizona,single,0.0454,Inf,Inf
+Arizona,joint,0.0259,20000,20000
+Arizona,joint,0.0288,50000,70000
+Arizona,joint,0.0336,1.00E+05,170000
+Arizona,joint,0.0424,3.00E+05,470000
+Arizona,joint,0.0454,Inf,Inf
+Arkansas,single,0.01,4199,4199
+Arkansas,single,0.025,8299,12498
+Arkansas,single,0.035,12399,24897
+Arkansas,single,0.045,20699,45596
+Arkansas,single,0.06,34599,80195
+Arkansas,single,0.07,Inf,Inf
+Arkansas,joint,0.01,4199,4199
+Arkansas,joint,0.025,8299,12498
+Arkansas,joint,0.035,12399,24897
+Arkansas,joint,0.045,20699,45596
+Arkansas,joint,0.06,34599,80195
+Arkansas,joint,0.07,Inf,Inf
+California,single,0.01,7582,7582
+California,single,0.02,17976,25558
+California,single,0.04,28371,53929
+California,single,0.06,39384,93313
+California,single,0.08,49774,143087
+California,single,0.093,254250,397337
+California,single,0.103,305100,702437
+California,single,0.113,508500,1210937
+California,single,0.123,1.00E+06,2210937
+California,single,0.133,Inf,Inf
+California,joint,0.01,15174,15174
+California,joint,0.02,35952,51126
+California,joint,0.04,46346,97472
+California,joint,0.06,57359,154831
+California,joint,0.08,67751,222582
+California,joint,0.093,345780,568362
+California,joint,0.103,414936,983298
+California,joint,0.113,691560,1674858
+California,joint,0.123,1.00E+06,2674858
+California,joint,0.133,Inf,Inf
+Colorado,single,0.0463,Inf,Inf
+Colorado,joint,0.0463,Inf,Inf
+Connecticut,single,0.03,10000,10000
+Connecticut,single,0.05,50000,60000
+Connecticut,single,0.055,1.00E+05,160000
+Connecticut,single,0.06,2.00E+05,360000
+Connecticut,single,0.065,250000,610000
+Connecticut,single,0.067,Inf,Inf
+Connecticut,joint,0.03,20000,20000
+Connecticut,joint,0.05,1.00E+05,120000
+Connecticut,joint,0.055,2.00E+05,320000
+Connecticut,joint,0.06,4.00E+05,720000
+Connecticut,joint,0.065,5.00E+05,1220000
+Connecticut,joint,0.067,Inf,Inf
+Delaware,single,0.022,5000,5000
+Delaware,single,0.039,10000,15000
+Delaware,single,0.048,20000,35000
+Delaware,single,0.052,25000,60000
+Delaware,single,0.0555,60000,120000
+Delaware,single,0.066,Inf,Inf
+Delaware,joint,0.022,5000,5000
+Delaware,joint,0.039,10000,15000
+Delaware,joint,0.048,20000,35000
+Delaware,joint,0.052,25000,60000
+Delaware,joint,0.0555,60000,120000
+Delaware,joint,0.066,Inf,Inf
+Florida,single,0,Inf,Inf
+Florida,joint,0,Inf,Inf
+Georgia,single,0.01,750,750
+Georgia,single,0.02,2250,3000
+Georgia,single,0.03,3750,6750
+Georgia,single,0.04,5250,12000
+Georgia,single,0.05,7000,19000
+Georgia,single,0.06,Inf,Inf
+Georgia,joint,0.01,1000,1000
+Georgia,joint,0.02,3000,4000
+Georgia,joint,0.03,5000,9000
+Georgia,joint,0.04,7000,16000
+Georgia,joint,0.05,10000,26000
+Georgia,joint,0.06,Inf,Inf
+Hawaii,single,0.014,2400,2400
+Hawaii,single,0.032,4800,7200
+Hawaii,single,0.055,9600,16800
+Hawaii,single,0.064,14400,31200
+Hawaii,single,0.068,19200,50400
+Hawaii,single,0.072,24000,74400
+Hawaii,single,0.076,36000,110400
+Hawaii,single,0.079,48000,158400
+Hawaii,single,0.0825,150000,308400
+Hawaii,single,0.09,175000,483400
+Hawaii,single,0.1,2.00E+05,683400
+Hawaii,single,0.11,Inf,Inf
+Hawaii,joint,0.014,4800,4800
+Hawaii,joint,0.032,9600,14400
+Hawaii,joint,0.055,19200,33600
+Hawaii,joint,0.064,28800,62400
+Hawaii,joint,0.068,38400,100800
+Hawaii,joint,0.072,48000,148800
+Hawaii,joint,0.076,72000,220800
+Hawaii,joint,0.079,96000,316800
+Hawaii,joint,0.0825,3.00E+05,616800
+Hawaii,joint,0.09,350000,966800
+Hawaii,joint,0.1,4.00E+05,1366800
+Hawaii,joint,0.11,Inf,Inf
+Idaho,single,0.016,1408,1408
+Idaho,single,0.036,2817,4225
+Idaho,single,0.041,4226,8451
+Idaho,single,0.051,5635,14086
+Idaho,single,0.061,7044,21130
+Idaho,single,0.071,10567,31697
+Idaho,single,0.074,Inf,Inf
+Idaho,joint,0.016,2817,2817
+Idaho,joint,0.036,5635,8452
+Idaho,joint,0.041,8453,16905
+Idaho,joint,0.051,11271,28176
+Idaho,joint,0.061,14089,42265
+Idaho,joint,0.071,21136,63401
+Idaho,joint,0.074,Inf,Inf
+Illinois,single,0.05,Inf,Inf
+Illinois,joint,0.05,Inf,Inf
+Indiana,single,0.034,Inf,Inf
+Indiana,joint,0.034,Inf,Inf
+Iowa,single,0.0036,1515,1515
+Iowa,single,0.0072,3030,4545
+Iowa,single,0.0243,6060,10605
+Iowa,single,0.045,13635,24240
+Iowa,single,0.0612,22725,46965
+Iowa,single,0.0648,30300,77265
+Iowa,single,0.068,45450,122715
+Iowa,single,0.0792,68175,190890
+Iowa,single,0.0898,Inf,Inf
+Iowa,joint,0.0036,1515,1515
+Iowa,joint,0.0072,3030,4545
+Iowa,joint,0.0243,6060,10605
+Iowa,joint,0.045,13635,24240
+Iowa,joint,0.0612,22725,46965
+Iowa,joint,0.0648,30300,77265
+Iowa,joint,0.068,45450,122715
+Iowa,joint,0.0792,68175,190890
+Iowa,joint,0.0898,Inf,Inf
+Kansas,single,0.027,15000,15000
+Kansas,single,0.048,Inf,Inf
+Kansas,joint,0.027,30000,30000
+Kansas,joint,0.048,Inf,Inf
+Kentucky,single,0.02,3000,3000
+Kentucky,single,0.03,4000,7000
+Kentucky,single,0.04,5000,12000
+Kentucky,single,0.05,8000,20000
+Kentucky,single,0.058,75000,95000
+Kentucky,single,0.06,Inf,Inf
+Kentucky,joint,0.02,3000,3000
+Kentucky,joint,0.03,4000,7000
+Kentucky,joint,0.04,5000,12000
+Kentucky,joint,0.05,8000,20000
+Kentucky,joint,0.058,75000,95000
+Kentucky,joint,0.06,Inf,Inf
+Louisiana,single,0.02,12500,12500
+Louisiana,single,0.04,50000,62500
+Louisiana,single,0.06,Inf,Inf
+Louisiana,joint,0.02,25000,25000
+Louisiana,joint,0.04,1.00E+05,125000
+Louisiana,joint,0.06,Inf,Inf
+Maine,single,0.065,20900,20900
+Maine,single,0.0795,Inf,Inf
+Maine,joint,0.065,41850,41850
+Maine,joint,0.0795,Inf,Inf
+Maryland,single,0.02,1000,1000
+Maryland,single,0.03,2000,3000
+Maryland,single,0.04,3000,6000
+Maryland,single,0.0475,1.00E+05,106000
+Maryland,single,0.05,125000,231000
+Maryland,single,0.0525,150000,381000
+Maryland,single,0.055,250000,631000
+Maryland,single,0.0575,Inf,Inf
+Maryland,joint,0.02,1000,1000
+Maryland,joint,0.03,2000,3000
+Maryland,joint,0.04,3000,6000
+Maryland,joint,0.0475,150000,156000
+Maryland,joint,0.05,175000,331000
+Maryland,joint,0.0525,225000,556000
+Maryland,joint,0.055,3.00E+05,856000
+Maryland,joint,0.0575,Inf,Inf
+Massachusetts,single,0.052,Inf,Inf
+Massachusetts,joint,0.052,Inf,Inf
+Michigan,single,0.0425,Inf,Inf
+Michigan,joint,0.0425,Inf,Inf
+Minnesota,single,0.0535,24680,24680
+Minnesota,single,0.0705,81080,105760
+Minnesota,single,0.0785,152540,258300
+Minnesota,single,0.0985,Inf,Inf
+Minnesota,joint,0.0535,36080,36080
+Minnesota,joint,0.0705,143350,179430
+Minnesota,joint,0.0785,254240,433670
+Minnesota,joint,0.0985,Inf,Inf
+Mississippi,single,0.03,5000,5000
+Mississippi,single,0.04,10000,15000
+Mississippi,single,0.05,Inf,Inf
+Mississippi,joint,0.03,5000,5000
+Mississippi,joint,0.04,10000,15000
+Mississippi,joint,0.05,Inf,Inf
+Missouri,single,0.015,1000,1000
+Missouri,single,0.02,2000,3000
+Missouri,single,0.025,3000,6000
+Missouri,single,0.03,4000,10000
+Missouri,single,0.035,5000,15000
+Missouri,single,0.04,6000,21000
+Missouri,single,0.045,7000,28000
+Missouri,single,0.05,8000,36000
+Missouri,single,0.055,9000,45000
+Missouri,single,0.06,Inf,Inf
+Missouri,joint,0.015,1000,1000
+Missouri,joint,0.02,2000,3000
+Missouri,joint,0.025,3000,6000
+Missouri,joint,0.03,4000,10000
+Missouri,joint,0.035,5000,15000
+Missouri,joint,0.04,6000,21000
+Missouri,joint,0.045,7000,28000
+Missouri,joint,0.05,8000,36000
+Missouri,joint,0.055,9000,45000
+Missouri,joint,0.06,Inf,Inf
+Montana,single,0.01,2800,2800
+Montana,single,0.02,4900,7700
+Montana,single,0.03,7400,15100
+Montana,single,0.04,10100,25200
+Montana,single,0.05,13000,38200
+Montana,single,0.06,16700,54900
+Montana,single,0.069,Inf,Inf
+Montana,joint,0.01,2800,2800
+Montana,joint,0.02,4900,7700
+Montana,joint,0.03,7400,15100
+Montana,joint,0.04,10100,25200
+Montana,joint,0.05,13000,38200
+Montana,joint,0.06,16700,54900
+Montana,joint,0.069,Inf,Inf
+Nebraska,single,0.0246,3000,3000
+Nebraska,single,0.0351,18000,21000
+Nebraska,single,0.0501,29000,50000
+Nebraska,single,0.0684,Inf,Inf
+Nebraska,joint,0.0246,6000,6000
+Nebraska,joint,0.0351,36000,42000
+Nebraska,joint,0.0501,58000,1.00E+05
+Nebraska,joint,0.0684,Inf,Inf
+Nevada,single,0,Inf,Inf
+Nevada,joint,0,Inf,Inf
+New Hampshire,single,0.05,Inf,Inf
+New Hampshire,joint,0.05,Inf,Inf
+New Jersey,single,0.014,20000,20000
+New Jersey,single,0.0175,35000,55000
+New Jersey,single,0.035,40000,95000
+New Jersey,single,0.05525,75000,170000
+New Jersey,single,0.0637,5.00E+05,670000
+New Jersey,single,0.0897,Inf,Inf
+New Jersey,joint,0.014,20000,20000
+New Jersey,joint,0.0175,50000,70000
+New Jersey,joint,0.0245,70000,140000
+New Jersey,joint,0.035,80000,220000
+New Jersey,joint,0.05525,150000,370000
+New Jersey,joint,0.0637,5.00E+05,870000
+New Jersey,joint,0.0897,Inf,Inf
+New Mexico,single,0.017,5500,5500
+New Mexico,single,0.032,11000,16500
+New Mexico,single,0.047,16000,32500
+New Mexico,single,0.049,Inf,Inf
+New Mexico,joint,0.017,8000,8000
+New Mexico,joint,0.032,16000,24000
+New Mexico,joint,0.047,24000,48000
+New Mexico,joint,0.049,Inf,Inf
+New York,single,0.04,8200,8200
+New York,single,0.045,11300,19500
+New York,single,0.0525,13350,32850
+New York,single,0.059,20550,53400
+New York,single,0.0645,77150,130550
+New York,single,0.0665,205850,336400
+New York,single,0.0685,1029250,1365650
+New York,single,0.0882,Inf,Inf
+New York,joint,0.04,16450,16450
+New York,joint,0.045,22600,39050
+New York,joint,0.0525,26750,65800
+New York,joint,0.059,41150,106950
+New York,joint,0.0645,154350,261300
+New York,joint,0.0665,308750,570050
+New York,joint,0.0685,2058550,2628600
+New York,joint,0.0882,Inf,Inf
+North Carolina,single,0.058,Inf,Inf
+North Carolina,joint,0.058,Inf,Inf
+North Dakota,single,0.0122,36900,36900
+North Dakota,single,0.0227,89350,126250
+North Dakota,single,0.0252,186350,312600
+North Dakota,single,0.0293,405100,717700
+North Dakota,single,0.0322,Inf,Inf
+North Dakota,joint,0.0122,73800,73800
+North Dakota,joint,0.0227,148850,222650
+North Dakota,joint,0.0252,226850,449500
+North Dakota,joint,0.0293,405100,854600
+North Dakota,joint,0.0322,Inf,Inf
+Ohio,single,0.0054,5200,5200
+Ohio,single,0.0107,10400,15600
+Ohio,single,0.0215,15650,31250
+Ohio,single,0.0269,20900,52150
+Ohio,single,0.0322,41700,93850
+Ohio,single,0.0376,83350,177200
+Ohio,single,0.043,104250,281450
+Ohio,single,0.0499,208500,489950
+Ohio,single,0.05392,Inf,Inf
+Ohio,joint,0.0054,5200,5200
+Ohio,joint,0.0107,10400,15600
+Ohio,joint,0.0215,15650,31250
+Ohio,joint,0.0269,20900,52150
+Ohio,joint,0.0322,41700,93850
+Ohio,joint,0.0376,83350,177200
+Ohio,joint,0.043,104250,281450
+Ohio,joint,0.0499,208500,489950
+Ohio,joint,0.05392,Inf,Inf
+Oklahoma,single,0.005,1000,1000
+Oklahoma,single,0.01,2500,3500
+Oklahoma,single,0.02,3750,7250
+Oklahoma,single,0.03,4900,12150
+Oklahoma,single,0.04,7200,19350
+Oklahoma,single,0.05,8700,28050
+Oklahoma,single,0.0525,Inf,Inf
+Oklahoma,joint,0.005,2000,2000
+Oklahoma,joint,0.01,5000,7000
+Oklahoma,joint,0.02,7500,14500
+Oklahoma,joint,0.03,9800,24300
+Oklahoma,joint,0.04,12200,36500
+Oklahoma,joint,0.05,15000,51500
+Oklahoma,joint,0.0525,Inf,Inf
+Oregon,single,0.05,3300,3300
+Oregon,single,0.07,8250,11550
+Oregon,single,0.09,125000,136550
+Oregon,single,0.099,Inf,Inf
+Oregon,joint,0.05,6500,6500
+Oregon,joint,0.07,16300,22800
+Oregon,joint,0.09,250000,272800
+Oregon,joint,0.099,Inf,Inf
+Pennsylvania,single,0.0307,Inf,Inf
+Pennsylvania,joint,0.0307,Inf,Inf
+Rhode Island,single,0.0375,59600,59600
+Rhode Island,single,0.0475,135500,195100
+Rhode Island,single,0.0599,Inf,Inf
+Rhode Island,joint,0.0375,59600,59600
+Rhode Island,joint,0.0475,135500,195100
+Rhode Island,joint,0.0599,Inf,Inf
+South Dakota,single,0,Inf,Inf
+South Dakoa,joint,0,Inf,Inf
+South Carolina,single,0,2880,2880
+South Carolina,single,0.03,5760,8640
+South Carolina,single,0.04,8640,17280
+South Carolina,single,0.05,11520,28800
+South Carolina,single,0.06,14400,43200
+South Carolina,single,0.07,Inf,Inf
+South Carolina,joint,0,2880,2880
+South Carolina,joint,0.03,5760,8640
+South Carolina,joint,0.04,8640,17280
+South Carolina,joint,0.05,11520,28800
+South Carolina,joint,0.06,14400,43200
+South Carolina,joint,0.07,Inf,Inf
+Tennessee,single,0.06,Inf,Inf
+Tennessee,joint,0.06,Inf,Inf
+Texas,single,0,Inf,Inf
+Texas,joint,0,Inf,Inf
+Utah,single,0.05,Inf,Inf
+Utah,joint,0.05,Inf,Inf
+Vermont,single,0.0355,36900,36900
+Vermont,single,0.068,89350,126250
+Vermont,single,0.078,186350,312600
+Vermont,single,0.088,405100,717700
+Vermont,single,0.0895,Inf,Inf
+Vermont,joint,0.0355,73800,73800
+Vermont,joint,0.068,148850,222650
+Vermont,joint,0.078,226850,449500
+Vermont,joint,0.088,405100,854600
+Vermont,joint,0.0895,Inf,Inf
+Virginia,single,0.02,3000,3000
+Virginia,single,0.03,5000,8000
+Virginia,single,0.05,17000,25000
+Virginia,single,0.0575,Inf,Inf
+Virginia,joint,0.02,3000,3000
+Virginia,joint,0.03,5000,8000
+Virginia,joint,0.05,17000,25000
+Virginia,joint,0.0575,Inf,Inf
+Washington,single,0,Inf,Inf
+Washington,joint,0,Inf,Inf
+West Virginia,single,0.03,10000,10000
+West Virginia,single,0.04,25000,35000
+West Virginia,single,0.045,40000,75000
+West Virginia,single,0.06,60000,135000
+West Virginia,single,0.065,Inf,Inf
+West Virginia,joint,0.03,10000,10000
+West Virginia,joint,0.04,25000,35000
+West Virginia,joint,0.045,40000,75000
+West Virginia,joint,0.06,60000,135000
+West Virginia,joint,0.065,Inf,Inf
+Wisconsin,single,0.04,10910,10910
+Wisconsin,single,0.0584,21820,32730
+Wisconsin,single,0.0627,240190,272920
+Wisconsin,single,0.0765,Inf,Inf
+Wisconsin,joint,0.04,14540,14540
+Wisconsin,joint,0.0584,29090,43630
+Wisconsin,joint,0.0627,320250,363880
+Wisconsin,joint,0.0765,Inf,Inf
+Wyoming,single,0,Inf,Inf
+Wyoming,joint,0,Inf,Inf
+D.C.,single,0.04,10000,10000
+D.C.,single,0.06,40000,50000
+D.C.,single,0.085,350000,4.00E+05
+D.C.,single,0.0895,Inf,Inf
+D.C.,joint,0.04,10000,10000
+D.C.,joint,0.06,40000,50000
+D.C.,joint,0.085,350000,4.00E+05
+D.C.,joint,0.0895,Inf,Inf
