@@ -32,9 +32,10 @@ has_loc <- hasLocality(state)
 # tax <- sapply(dat[,4],function(x,a,b,c,d) net(x,a,b,c,d), a=fTax,b=sTax,c=lTax,d=has_loc)
 
 # This is a starter "input file"
-dat <- tbl_df(read.csv("mthpay.csv",
+dat <- tbl_df(read.csv("pay.csv",
                        stringsAsFactors=FALSE))
-
+dat <- dat %>%
+    mutate(tsp = pmin(gross * tsp_trad,tsp_lim))
 # Calculate net income
 net <- mapply(net, as.list(dat$gross),
               replicate(nrow(dat), list(fTax)),
@@ -49,7 +50,6 @@ dat <- bind_cols(dat, as.data.frame(net))
 # Create TSP contribution data based on minimum contributions
 dat <-
     dat %>%
-    mutate(tsp = pmin(gross * tsp_trad,tsp_lim)) %>%
     # Create additional data fields for sensitivity study
     mutate(tsp_bal = gross,
            pens_eo = gross,
@@ -123,7 +123,7 @@ for(i in 1:nrow(dat)){
     }
 }
 
-pdf("mth_dat.pdf",height=22,width=17)
+pdf("working.pdf",height=22,width=17)
 grid.table(round(dat,2))
 dev.off()
 
@@ -191,7 +191,7 @@ for(i in 1:(101-r_dat$age)){
     }
 }
 dat_r <- data.frame(age,gross,net,pens,ss,tsp_bal)
-pdf("mth_dat2.pdf",height=15,width=8.5)
+pdf("retirement.pdf",height=15,width=8.5)
 grid.table(round(dat_r,2))
 dev.off()
 
