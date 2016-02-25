@@ -12,7 +12,9 @@ net <- function(income,fTax,sTax,lTax,loc,tsp_trad){
     return(as.numeric(income-tsp_trad) - 
                fed_tax(as.numeric(income-tsp_trad),fTax) - 
                state_tax(as.numeric(income-tsp_trad),sTax,lTax,loc) - 
-               fica(as.numeric(income)))
+               fica(as.numeric(income)),
+           
+           )
 }
 net_r <- function(income,fTax,sTax,lTax,loc){
     return(as.numeric(income) - 
@@ -48,17 +50,6 @@ fed_tax <- function(income,fTax){
         i <- i - 1
     }
     return(0)
-}
-##########################################################
-###############  FICA Tax Calculations  ##################
-##########################################################
-fica <- function(income,max=118500){
-    fica_tax <- income * .0145
-    if(income>max){
-        return(fica_tax + max * .062)
-    }else{
-        return(fica_tax + income * .062)
-    }
 }
 ##########################################################
 ##############  State Tax Calculations  ##################
@@ -130,3 +121,56 @@ localityList <- function(name){
     lTax <- localTax %>% filter(state==name)
     lTax$locality
 }
+##########################################################
+###############  FICA Tax Calculations  ##################
+##########################################################
+fica <- function(income,max=118500){
+    fica_tax <- income * .0145
+    if(income>max){
+        return(fica_tax + max * .062)
+    }else{
+        return(fica_tax + income * .062)
+    }
+}
+##########################################################
+###############  FEHB Contribution  ######################
+##########################################################
+# fehb <- function(income){
+#     return(income - .008)
+# }
+##########################################################
+###############  Pension Calculation  ####################
+##########################################################
+# Input gross_1=income last year of work, gross_2=income for the year before last year,
+# gross_2=income for two years before last year, 
+# age_leave=age at last year of work (should be equal to of less than pens_age),
+# yos=years of service, pens_age=age_leave to begin collecting pension,
+# eo=T/F whether or not early out is offered, inflation=inflation rate
+pension <- function(gross_1,gross_2,gross_3,age_leave,yos,pens_age,eo,inflation){
+    if(age_leave>=62 & yos>=20){
+        # Immediate Pension at 62 or later, with 20 years get 1.1% multiplier
+        return(yos * 0.011 * 
+                   (gross_1 + gross_2/(1+inflation) + gross_3/(1+inflation)^2)/3)
+    }else if(eo==TRUE & ((age_leave>=50 & yos>=20) | (yos>=25))){
+        # Early Out Compuation
+        return(yos * 0.01*
+                   (gross_1 + gross_2/(1+inflation) + gross_3/(1+inflation)^2)/3)
+    }else if(pens_age>=60 & yos>=20){
+        # Take Pension at 60 with 20 yos, no reduction in Computation
+        return(yos * 0.01 * 
+                   (gross_1 + gross_2/(1+inflation) + gross_3/(1+inflation)^2)/3)
+    }else if(pens_age>=57 & yos>=30){
+        # Take Pension at MRA(57) with 30 yos, no reduction in Computation
+        return(yos * 0.01 * 
+                   (gross_1 + gross_2/(1+inflation) + gross_3/(1+inflation)^2)/3)
+    }else if(pens_age>=62 & yos>=5){
+        return(yos * 0.01 * 
+                   (gross_1 + gross_2/(1+inflation) + gross_3/(1+inflation)^2)/3)        
+    }else if(pens_age>=57 & yos>=10){
+        return(yos * 0.01 * (1-(62-pens_age)*.05) *
+               (gross_1 + gross_2/(1+inflation) + gross_3/(1+inflation)^2)/3)
+    }else{
+        return(NA)
+    }
+}
+
