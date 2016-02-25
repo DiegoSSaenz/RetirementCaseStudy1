@@ -12,8 +12,7 @@ net <- function(income,fTax,sTax,lTax,loc,tsp_trad){
     return(as.numeric(income-tsp_trad) - 
                fed_tax(as.numeric(income-tsp_trad),fTax) - 
                state_tax(as.numeric(income-tsp_trad),sTax,lTax,loc) - 
-               fica(as.numeric(income)),
-           
+               fica(as.numeric(income))           
            )
 }
 net_r <- function(income,fTax,sTax,lTax,loc){
