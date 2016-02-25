@@ -1,21 +1,30 @@
-#Example 
+# Example 
 library(dplyr)
 library(gridExtra)
 source('TaxFunctions.R')
 
-#Traditional TSP Contributions
-tsp_trad <- .05
-tsp_lim <- 18000
+# Traditional TSP Contributions and contribution limit
+tsp_trad <- .05   # 5% self contributions
+tsp_match <- .05  # 5% Employer TSP Matching
+tsp_lim <- 18000  # TSP Contribution Limit
 
-#Social Security
+# Social Security Bend Points
 ss_bp1 <- 856
 ss_bp2 <- 5157
+# Initial Social Security AIME based on past contributions
 aime <- 0
+# FERS Contribution Percent FERS=0.8%, FERS-RAE=3.1% (1/1/2013), FERS-FRAE=4.4% (1/1/2014)
+fers <- 0.008
 
-#inflation adjusted returns
+# Inflation adjusted returns
 ret <- .05
-#inflation rate
+# Inflation rate
 inflation <- .025
+# Savings Rate: Savings = After-tax Income - Spending
+sav_rate <- 0.15
+
+
+# Residence while working
 state <- "Maryland"
 locality <- "Montgomery County"
 status <- "single"
@@ -25,17 +34,17 @@ fTax <- fed_br(status)
 sTax <- st_br(state,status)
 lTax <- loc_br(state,locality)
 has_loc <- hasLocality(state)
-#state_tax(dat[1,4],sTax,lTax,has_loc)
-
-# tax <- dat %>% mutate(net(gross,fTax,sTax,lTax,has_loc))
-# tax <- sapply(dat[,4],net)
-# tax <- sapply(dat[,4],function(x,a,b,c,d) net(x,a,b,c,d), a=fTax,b=sTax,c=lTax,d=has_loc)
 
 # This is a starter "input file"
 dat <- tbl_df(read.csv("pay.csv",
                        stringsAsFactors=FALSE))
+
+# Calculate tax-deferred contributions
 dat <- dat %>%
     mutate(tsp = pmin(gross * tsp_trad,tsp_lim))
+dat <- dat %>%
+    mutate(tsp_bal = tsp)
+
 # Calculate net income
 net <- mapply(net, as.list(dat$gross),
               replicate(nrow(dat), list(fTax)),
@@ -47,65 +56,28 @@ net <- mapply(net, as.list(dat$gross),
 
 dat <- bind_cols(dat, as.data.frame(net))
 
+# FERS Reductions of post-tax income
+dat$net <- dat$net *(1-fers)
+
+# Calculate Savings and Spending based on savings rate (sav_rate)
+dat <- dat %>% mutate(spend = net * (1-sav_rate))
+dat <- dat %>% mutate(savings = (net-spend))
+
 # Create TSP contribution data based on minimum contributions
 dat <-
     dat %>%
     # Create additional data fields for sensitivity study
-    mutate(tsp_bal = gross,
-           pens_eo = gross,
-           pens_57 = gross,
-           pens_60 = gross,
-           pens_62 = gross,
-           ss      = gross)
+    mutate(ss      = gross)
 
 for(i in 1:nrow(dat)){
     #Post-tax and post-TSP contribution income
     # dat[i,6] <- net(dat$gross[i],fTax,sTax,lTax,has_loc,dat$tsp[i])
     #TSP Balance assumed inflation adjusted rate of return equal to ret
     if(i>1){
-        dat$tsp_bal[i] <- dat$tsp[i-1] + dat$tsp_bal[i-1]*(1+ret)+
-            dat$gross[i-1]*.05
+        dat$tsp_bal[i] <- dat$tsp_bal[i] + dat$tsp_bal[i-1]*(1+ret)+
+            dat$gross[i]*tsp_match
     }else{
-        dat$tsp_bal[i] <- 0 
-    }
-    ####  Early Out if retire at this point  ####
-    if(((dat$age[i]>=50) & (dat$yos[i]>=20)) | (dat$yos[i]>=25)){
-        dat$pens_eo[i] <- dat$yos[i] * 0.01 *
-            (dat$gross[i] + dat$gross[i-1]/(1+inflation) + dat$gross[i-2]/(1+inflation)^2)/3
-#            max(dat$gross[1:i]) * (1 + (1+inflation)^-1 + (1+inflation)^-2)/3
-            
-    }else{
-        dat$pens_eo[i] <- NA
-    }
-    #### Pension at 57 if retire at this point ####
-    if(dat$yos[i]>=30){
-        dat$pens_57[i] <- dat$yos[i] * 0.01 *
-            (dat$gross[i] + dat$gross[i-1]/(1+inflation) + dat$gross[i-2]/(1+inflation)^2)/3
-    }else if(dat$yos[i]>=10){
-        dat$pens_57[i] <- dat$yos[i] * 0.01 * 0.75 *
-            (dat$gross[i] + dat$gross[i-1]/(1+inflation) + dat$gross[i-2]/(1+inflation)^2)/3
-    }else{
-        dat$pens_57[i] <- NA
-    }
-    #### Pension at 60 if retire at this point ####
-    if(dat$yos[i]>=20){
-        dat$pens_60[i] <- dat$yos[i] * 0.01 * 
-            (dat$gross[i] + dat$gross[i-1]/(1+inflation) + dat$gross[i-2]/(1+inflation)^2)/3
-    }else if(dat$yos[i]>=10){
-        dat$pens_60[i] <- dat$yos[i] * 0.01 * 0.90 *
-            (dat$gross[i] + dat$gross[i-1]/(1+inflation) + dat$gross[i-2]/(1+inflation)^2)/3
-    }else{
-        dat$pens_60[i] <- NA
-    }
-    #### Pension at 62 if retire at this point ####
-    if((dat$yos[i]>=20) & (dat$age[i]>=62)){
-        dat$pens_62[i] <- dat$yos[i] * 0.011 * 
-            (dat$gross[i] + dat$gross[i-1]/(1+inflation) + dat$gross[i-2]/(1+inflation)^2)/3
-    }else if(dat$yos[i]>=5){
-        dat$pens_62[i] <- dat$yos[i] * 0.01 * 
-            (dat$gross[i] + dat$gross[i-1]/(1+inflation) + dat$gross[i-2]/(1+inflation)^2)/3
-    }else{
-        dat$pens_62[i] <- NA
+        dat$tsp_bal[i] <- dat$tsp_bal[i] + dat$gross[i]*tsp_match 
     }
     #### Social Security at 62 if retire at this point ####
     if(dat$yos[i]>=10){
@@ -133,6 +105,11 @@ locality <- "Orlando"
 status <- "single"
 #inflation adjusted returns
 ret <- .05
+# Age when last worked
+age_leave <- 57  # Age when last worked
+ret_age <- 57    # Age when pension collection starts
+eo <- FALSE      # Whether offered Early Out
+
 #inflation rate
 inflation <- .025
 
@@ -146,27 +123,31 @@ rmd <- c(27.4,26.5,25.6,24.7,23.8,22.9,22.0,21.2,20.3,19.5,18.7,17.9,
             9.1,8.6,8.1,7.6,7.1,6.7,6.3,5.9,5.5,5.2,4.9,4.5,
             4.2,3.9,3.7,3.4,3.1,2.9,2.6,2.4,2.1,1.9)
 
-r_dat <- dat %>% filter(age==57) %>% select(-pens_eo,-pens_60,-pens_62)
-exp <- r_dat$net
+dat_last3 <- dat[dat$age %in% (age_leave-2):age_leave,]
+gross_3 <- x$gross[1];gross_2 <- x$gross[2];gross_1 <- x$gross[3]
+
+r_dat <- dat %>% filter(age==age_leave) %>% select(-pens_eo,-pens_60,-pens_62)
+# Set spending in retirement to be the same as last year of work
+exp <- r_dat$spend
 #years to RMDs
 rmd_y <- 70-r_dat$age
 for(i in 1:(101-r_dat$age)){
     if(i==1){
         age <- r_dat$age
-        pens <- r_dat$pens_57
+        pens <- pension(gross_1,gross_2,gross_3,age_leave,r_dat$yos,age_leave,eo,inflation)
         ss <- 0
         tsp_bal <- r_dat$tsp_bal
-        gross <- exp+10000
-        tsp_bal <- tsp_bal*(1+ret) - exp-10000+pens[i]
+        gross <- exp+20000
+        tsp_bal <- tsp_bal*(1+ret) - exp-20000+pens[i]
         net <- net_r(gross,fTax,sTax,lTax,has_loc)
         taxable <- 0
     }else if(i<(63-r_dat$age)){
         age <- append(age,age[i-1]+1)
         pens <- append(pens,pens[i-1]/(1+inflation))
         ss <- append(ss, 0)
-        gross <- append(gross, exp+10000)
+        gross <- append(gross, exp+20000)
         tsp_bal <- append(tsp_bal, tsp_bal[i-1]*(1+ret) - 
-                              exp-10000 + pens[i])
+                              exp-20000 + pens[i])
         net <- append(net, net_r(gross[i],fTax,sTax,lTax,has_loc))
         taxable <- append(taxable, 0)
     }else if(i>70-r_dat$age){
@@ -183,8 +164,8 @@ for(i in 1:(101-r_dat$age)){
         age <- append(age,age[i-1]+1)
         pens <- append(pens,pens[i-1])
         ss <- append(ss, r_dat$ss*(.7+.325))
-        gross <- append(gross, exp+10000)
-        tsp_bal <- append(tsp_bal, tsp_bal[i-1]*(1+ret) - exp-10000 +
+        gross <- append(gross, exp+20000)
+        tsp_bal <- append(tsp_bal, tsp_bal[i-1]*(1+ret) - exp-20000 +
                               pens[i] + r_dat$ss*(.7+.325))
         net <- append(net, net_r(gross[i],fTax,sTax,lTax,has_loc))
         taxable <- append(taxable, 0)
