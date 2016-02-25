@@ -126,7 +126,7 @@ rmd <- c(27.4,26.5,25.6,24.7,23.8,22.9,22.0,21.2,20.3,19.5,18.7,17.9,
 dat_last3 <- dat[dat$age %in% (age_leave-2):age_leave,]
 gross_3 <- x$gross[1];gross_2 <- x$gross[2];gross_1 <- x$gross[3]
 
-r_dat <- dat %>% filter(age==age_leave) %>% select(-pens_eo,-pens_60,-pens_62)
+r_dat <- dat %>% filter(age==age_leave)
 # Set spending in retirement to be the same as last year of work
 exp <- r_dat$spend
 #years to RMDs
