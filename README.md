@@ -7,9 +7,13 @@ A case study for retirement as government employee
 + 5% TSP contribution
 + 5% inflation adjusted returns
 + 2.5% inflation rate
-+ 2015 Dollars
++ 2016 Dollars
 + Income, Tax Brackets, Social Security are inflation adjusted
 + Pay progression in pay.csv
+
+####2/27/2016 12:16pm Modifications
++ Used pre-allocated vectors for retirement instead of appending to vectors
++ Incorporated availRoth bug fix
 
 ####2/26/2016 Modifications
 Modified Working data:

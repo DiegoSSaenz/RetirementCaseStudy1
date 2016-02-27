@@ -35,7 +35,7 @@ net <- mapply(net, as.list(dat$gross),
 dat <- bind_cols(dat, as.data.frame(net))
 
 # FERS Reductions of post-tax income
-dat$net <- dat$net - fers*gross
+dat$net <- dat$net - fers*dat$gross
 
 # Calculate Savings and Spending based on savings rate (sav_rate)
 dat <- dat %>% mutate(spend = net * (1-sav_rate))
@@ -168,7 +168,7 @@ r_dat <- dat %>% filter(age==retireAge) %>% select(-gross,-tsp,-roth,-trad,-hsa)
 # exp <- spend$exp
 
 # Roth balance available
-rothAvail <- dat %>% summarise(sum(roth))
+rothAvail <- dat %>% filter(age<=retireAge) %>% summarise(sum(roth))
 
 #years to RMDs
 rmd_y <- 70-r_dat$age
@@ -210,87 +210,82 @@ net <- numeric(die+1-r_dat$age)
 
 for(i in 1:(die+1-r_dat$age)){
     if(i==1){
-        age <- r_dat$age
-        pens <- 
-            if(age>=57) {
-                pens <- pension(gross_1,gross_2,gross_3,age_leave,r_dat$yos,pens_age,eo,inflation)  
+        age[i] <- r_dat$age
+        pens[i] <- 
+            if(age[i]>=57) {
+                pension(gross_1,gross_2,gross_3,age_leave,r_dat$yos,pens_age,eo,inflation)  
             } else{
                 0
             }
-        ss <-
-            if(age>=63) {
+        ss[i] <-
+            if(age[i]>=63) {
                 r_dat$ss*(.7)  
             } else{
                 0
             }
-        
-        tsp_bal <- r_dat$tsp_bal
-        roth_bal <- as.numeric(rothAvail)
-        tax_bal <- r_dat$tax_bal
-        
-        tsp_bal <- tsp_bal*(1+ret) - tsp_bal*ladder
-        roth_bal <- roth_bal - roth_bal*rothRate
-        tax_bal <- tax_bal*(1+ret) - tax_bal*taxAcctRate
-        
-        gross <- tsp_bal*ladder + roth_bal*rothRate + tax_bal*taxAcctRate
-        
-        net <- net_r(gross,fTax,sTax,lTax,has_loc)
-        # taxable <- 0
+        tsp_bal[i] <- r_dat$tsp_bal
+        roth_bal[i] <- as.numeric(rothAvail)
+        tax_bal[i] <- r_dat$tax_bal
+        tsp_bal[i] <- tsp_bal[i]*(1+ret) - tsp_bal[i]*ladder
+        roth_bal[i] <- roth_bal[i] - roth_bal[i]*rothRate
+        tax_bal[i] <- tax_bal[i]*(1+ret) - tax_bal[i]*taxAcctRate
+        gross[i] <- tsp_bal[i]*ladder + 
+            roth_bal[i]*rothRate + 
+            tax_bal[i]*taxAcctRate
+        net[i] <- net_r(gross[i],fTax,sTax,lTax,has_loc)
+        # taxable[i] <- 0
     }else if(i<(63-r_dat$age)){
-        age <- append(age,age[i-1]+1)
+        age[i] <- age[i-1]+1 
         if (i<=58-r_dat$age) {
-            pens <- append(pens,pens[i-1])
-            tsp_bal <- append(tsp_bal, tsp_bal[i-1]*(1+ret)-tsp_bal[i-1]*ladder) 
-            roth_bal <- append(roth_bal, roth_bal[i-1]*(1+ret)-roth_bal[i-1]*rothRate)
-            tax_bal <- append(tax_bal, tax_bal[i-1]*(1+ret)-tax_bal[i-1]*taxAcctRate)
-            ss <- append(ss, 0)            
-            gross <- append(gross, tsp_bal[i]*ladder + roth_bal[i]*rothRate + tax_bal[i]*taxAcctRate)
-            net <- append(net, net_r(gross[i],fTax,sTax,lTax,has_loc))
-            # taxable <- append(taxable, 0)
+            pens[i] <- pens[i-1]
+            tsp_bal[i] <- tsp_bal[i-1]*(1+ret)-tsp_bal[i-1]*ladder 
+            roth_bal[i] <- roth_bal[i-1]*(1+ret)-roth_bal[i-1]*rothRate
+            tax_bal[i] <- tax_bal[i-1]*(1+ret)-tax_bal[i-1]*taxAcctRate
+            ss[i] <- 0            
+            gross[i] <- tsp_bal[i]*ladder + roth_bal[i]*rothRate + tax_bal[i]*taxAcctRate
+            net[i] <- net_r(gross[i],fTax,sTax,lTax,has_loc)
+            # taxable[i] <- 0
             if (i==58-r_dat$age) pens[i] <- pension(gross_1,gross_2,gross_3,age_leave,r_dat$yos,pens_age,eo,inflation)
-            # exp <- tsp_bal[i-1]*.04
+            # exp[i] <- tsp_bal[i-1]*.04
         } else if (i<=63-r_dat$age & i>58-r_dat$age) {
-            pens <- append(pens,pens[i-1])
-            tsp_bal <- append(tsp_bal, tsp_bal[i-1]*(1+ret)-tsp_bal[i-1]*ladder)
-            roth_bal <- append(roth_bal, roth_bal[i-1]*(1+ret)-roth_bal[i-1]*rothRate)   
-            tax_bal <- append(tax_bal, tax_bal[i-1]*(1+ret)-tax_bal[i-1]*taxAcctRate)
-            ss <- append(ss, 0)            
-            gross <- append(gross, tsp_bal[i]*ladder + pens[i] + roth_bal[i]*rothRate + tax_bal[i]*taxAcctRate)
-            net <- append(net, net_r(gross[i],fTax,sTax,lTax,has_loc))
-            # taxable <- append(taxable, 0)
+            pens[i] <- pens[i-1]
+            tsp_bal[i] <- tsp_bal[i-1]*(1+ret)-tsp_bal[i-1]*ladder
+            roth_bal[i] <- roth_bal[i-1]*(1+ret)-roth_bal[i-1]*rothRate   
+            tax_bal[i] <- tax_bal[i-1]*(1+ret)-tax_bal[i-1]*taxAcctRate
+            ss[i] <- 0            
+            gross[i] <- tsp_bal[i]*ladder + pens[i] + roth_bal[i]*rothRate + tax_bal[i]*taxAcctRate
+            net[i] <- net_r(gross[i],fTax,sTax,lTax,has_loc)
+            # taxable[i] <- 0
         }    
     }else if(i>70-r_dat$age){
-        age <- append(age,age[i-1]+1)
-        pens <- append(pens,pens[i-1])
-        tsp_bal <- append(tsp_bal, tsp_bal[i-1]*(1+ret) - 
-                              tsp_bal[i-1]/rmd[i-rmd_y])        
-        roth_bal <- append(roth_bal, roth_bal[i-1]*(1+ret)-roth_bal[i-1]*rothRate)
-        tax_bal <- append(tax_bal, tax_bal[i-1]*(1+ret)-tax_bal[i-1]*0)
-        ss <- append(ss, r_dat$ss*(.7))
-        gross <- append(gross, pens[i] +
+        age[i] <- age[i-1]+1
+        pens[i] <- pens[i-1]
+        tsp_bal[i] <- tsp_bal[i-1]*(1+ret) - 
+                              tsp_bal[i-1]/rmd[i-rmd_y]        
+        roth_bal[i] <- roth_bal[i-1]*(1+ret)-roth_bal[i-1]*rothRate
+        tax_bal[i] <- tax_bal[i-1]*(1+ret)-tax_bal[i-1]*0
+        ss[i] <- r_dat$ss*(.7)
+        gross[i] <- pens[i] +
                             r_dat$ss*(.7) +
                             tsp_bal[i]/rmd[i-rmd_y] +
                             roth_bal[i]*rothRate +
                             tax_bal[i]*0
-        )
-        
-        net <- append(net, net_r(gross[i],fTax,sTax,lTax,has_loc))
-        # taxable <- append(taxable, taxable[i-1]*(1+ret)+ net[i] - exp)
+        net[i] <- net_r(gross[i],fTax,sTax,lTax,has_loc)
+        # taxable[i] <- taxable[i-1]*(1+ret)+ net[i] - exp
     }else{
-        age <- append(age,age[i-1]+1)
-        pens <- append(pens,pens[i-1])
-        tsp_bal <- append(tsp_bal, tsp_bal[i-1]*(1+ret) - tsp_bal[i-1]*tspRate)         
-        roth_bal <- append(roth_bal, roth_bal[i-1]*(1+ret)-roth_bal[i-1]*rothRate)
-        tax_bal <- append(tax_bal, tax_bal[i-1]*(1+ret)-tax_bal[i-1]*0)
-        ss <- append(ss, r_dat$ss*(.7))
-        gross <- append(gross, pens[i] + 
+        age[i] <- age[i-1]+1
+        pens[i] <- pens[i-1]
+        tsp_bal[i] <- tsp_bal[i-1]*(1+ret) - tsp_bal[i-1]*tspRate         
+        roth_bal[i] <- roth_bal[i-1]*(1+ret)-roth_bal[i-1]*rothRate
+        tax_bal[i] <- tax_bal[i-1]*(1+ret)-tax_bal[i-1]*0
+        ss[i] <- r_dat$ss*(.7)
+        gross[i] <- pens[i] + 
                             r_dat$ss*(.7) +
                             tsp_bal[i]*tspRate +
                             roth_bal[i]*rothRate +
                             tax_bal[i]*0
-        )
-        net <- append(net, net_r(gross[i],fTax,sTax,lTax,has_loc))
-        # taxable <- append(taxable, 0)
+        net[i] <- net_r(gross[i],fTax,sTax,lTax,has_loc)
+        # taxable[i] <- 0
     }
 }
 
