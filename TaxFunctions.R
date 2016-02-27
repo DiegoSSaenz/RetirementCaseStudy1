@@ -128,7 +128,7 @@ fica <- function(income,ss_max=118500){
     if(income>ss_max){
         return(fica_tax + ss_max * .062)
     }else{
-        return(max(fica_tax + income * .062),0)
+        return(max(fica_tax + income * .062,0))
     }
 }
 ##########################################################
@@ -199,52 +199,61 @@ rmd <- c(27.4,26.5,25.6,24.7,23.8,22.9,22.0,21.2,20.3,19.5,18.7,17.9,
 # s_tax=Student's Federal income tax paid for previous year
 # st=state of residence
 
-########### Exployment Expense Allowance ##########
+########### Exployment Expense Allowance ############
 # 35% of lesser of earned incomes (or of single parent's income)
 # or $4,000 which ever is less
 eea_rate <- .35  
 eea_amt <- 4000
-########### Contributions from Assets #############
+########### Contributions from Assets ###############
 # Parental Asset Conversion rate
 asset_conv_rate <- 0.12
 ### Contributions from Adjusted Available Income (AAI) ###########
 # AAI minimum, below this value contribution from AAI is aai_low
 aai_min <- 3409
 aai_low <- -750
-################## Table A1 #######################
+########### Student Factors ######################
+# Student Assessment of Available Income
+s_inc_ass <- 0.50
+# Student Income Protection Allowance
+inc_prot_allw <- 6400
+# Student Assesment of Assets
+s_asset_ass <- 0.20
+################## Table A1 #########################
 tA1 <- tbl_df(read.csv("tableA1.csv", stringsAsFactors=FALSE))
 tA1$below <- as.numeric(sub("%","",tA1$below))/100
 tA1$above <- as.numeric(sub("%","",tA1$above))/100
 tA1_cutoff <- 15000
-################## Table A3 #######################
+################## Table A3 #########################
 tA3 <- tbl_df(read.csv("tableA3.csv", stringsAsFactors=FALSE))
 tA3_addhh <- 4270
 tA3_addstd <- 3040
-################## Table A4 #######################
+################## Table A4 #########################
 tA4 <- tbl_df(read.csv("tableA4.csv", stringsAsFactors=FALSE))
 tA4$rate <- as.numeric(sub("%","",tA4$rate))/100
-################## Table A5 #######################
+################## Table A5 #########################
 tA5 <- tbl_df(read.csv("tableA5.csv", stringsAsFactors=FALSE))
-################## Table A6 #######################
+################## Table A6 #########################
 tA6 <- tbl_df(read.csv("tableA6.csv", stringsAsFactors=FALSE))
 tA6$rate <- as.numeric(sub("%","",tA6$rate))/100
 tA4_low <- -3409
 tA4_cont <- -750
-################## Table A7 #######################
+################## Table A7 #########################
 tA7 <- tbl_df(read.csv("tableA7.csv", stringsAsFactors=FALSE))
 tA7$rate <- as.numeric(sub("%","",tA7$rate))/100
 
-fafsa <- function(agi,p1_ei,p2_ei,ui,afi,fed_tax,assets,bus_farm,hh,kic,age,
-                  s_agi,s_ei,s_tax,s_assets,st){
+fafsa <- function(agi,p1_ei,p2_ei,ui,afi,fed_tax,
+                  assets,bus_farm,hh,kic,age,st,
+                  s_agi=0,s_ei=0,s_ui=0,s_afi=0,s_fed_tax=0,
+                  s_assets=0,s_bus_farm=0){
     # Total Income (Line 7) assuming that taxes are filed
-    total_income <- max(agi,0) + ui - afi # Line 7
+    total_income <- max(agi,0) + ui - afi 
     # Total Allowances (Line 14) 
     total_allowances <- max(fed_tax,0) + 
         max(min(total_income, tA1_cutoff-1)*filter(tA1,state==st)$below +
         max(total_income-tA1_cutoff, 0)*filter(tA1,state==st)$above,0) +
         fica(p1_ei) + fica(p2_ei) +
-        filter(tA3,hsize==hh)[,kic+1] +
-        min(min(p1_ei,p2_ei)*eea_rate,eaa_amt)
+        as.numeric(filter(tA3,hsize==hh)[,kic+1]) +
+        min(min(p1_ei,p2_ei)*eea_rate,eea_amt)
     # Available Income (Line 15) Note: Can be negative
     avail_income <- total_income - total_allowances
     # Contribution from Assets (Line 24)
@@ -264,5 +273,21 @@ fafsa <- function(agi,p1_ei,p2_ei,ui,afi,fed_tax,assets,bus_farm,hh,kic,age,
         max((aai-tA6$AAI[4])*(tA6$rate[5]-tA6$rate[4]),0) +
         max((aai-tA6$AAI[5])*(tA6$rate[6]-tA6$rate[5]),0)
     # Parent's Contribution (Line 28)
-    return(parent_cont <- max(aai_cont/kic,0))
+    parent_cont <- max(aai_cont/kic,0)
+    # Total Income (Line 35) assuming that taxes are filed
+    total_s_income <- max(s_agi,0) + s_ui - s_afi
+    # Total Allowances (Line 41)
+    total_s_allowances <- max(s_fed_tax,0) +
+        max(total_s_income,0)*filter(tA7,state==st)$rate +
+        fica(s_ei) + inc_prot_allw - min(aai,0)
+    # Student's Contribution from Available Income (Line 44)
+    s_cont_inc <- max((total_s_income - total_s_allowances)*s_inc_ass,0)
+    # Student's Contribution from Available Income (Line 50)
+    s_cont_assets <- (s_assets + s_bus_farm)*s_asset_ass
+    # Expected Family Contribution (Line 51)
+    efc <- max(parent_cont+s_cont_inc+s_cont_assets,0)
+    return(efc)
 }
+# test
+fafsa(agi=50000,p1_ei=25000,p2_ei=25000,ui=0,afi=0,fed_tax=3000,
+      assets=0,bus_farm=0,hh=3,kic=1,age=47,st="Maryland")
