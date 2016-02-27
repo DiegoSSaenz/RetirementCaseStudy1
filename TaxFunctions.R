@@ -123,12 +123,12 @@ localityList <- function(name){
 ##########################################################
 ###############  FICA Tax Calculations  ##################
 ##########################################################
-fica <- function(income,max=118500){
+fica <- function(income,ss_max=118500){
     fica_tax <- income * .0145
-    if(income>max){
-        return(fica_tax + max * .062)
+    if(income>ss_max){
+        return(fica_tax + ss_max * .062)
     }else{
-        return(fica_tax + income * .062)
+        return(max(fica_tax + income * .062),0)
     }
 }
 ##########################################################
@@ -179,3 +179,90 @@ rmd <- c(27.4,26.5,25.6,24.7,23.8,22.9,22.0,21.2,20.3,19.5,18.7,17.9,
          17.1,16.3,15.5,14.8,14.1,13.4,12.7,12.0,11.4,10.8,10.2,9.6,
          9.1,8.6,8.1,7.6,7.1,6.7,6.3,5.9,5.5,5.2,4.9,4.5,
          4.2,3.9,3.7,3.4,3.1,2.9,2.6,2.4,2.1,1.9)
+##########################################################
+######### FAFSA Calculation (College Tax)  ###############
+##########################################################
+# based on http://ifap.ed.gov/efcformulaguide/attachments/100615EFCFormulaGuide1617Attach.pdf
+# agi=Parent's Adjusted Gross Income (if negative enter 0)
+# p1_ei=Parent 1 earned income from work
+# p2_ei=Parent 2 earned income from work (if no second parent enter NA)
+# ti=Parents taxable income
+# ui=Total untaxed income and benefits (includes Roth withdrawals)
+# afi=Total additional financial information (optional)
+# fed_tax=Federal income tax for previous year
+# assets=Total cash, savings & checkings, positive net worth of investments,
+# bus_farm=Net worth of business/or investment farm
+# hh=Number is Parent's Household including student
+# kic=Kid's in college, Number of children in college(don't include parents)
+# s_agi=Student's Adjusted Gross Income
+# s_ei=student's earned income
+# s_tax=Student's Federal income tax paid for previous year
+# st=state of residence
+
+########### Exployment Expense Allowance ##########
+# 35% of lesser of earned incomes (or of single parent's income)
+# or $4,000 which ever is less
+eea_rate <- .35  
+eea_amt <- 4000
+########### Contributions from Assets #############
+# Parental Asset Conversion rate
+asset_conv_rate <- 0.12
+### Contributions from Adjusted Available Income (AAI) ###########
+# AAI minimum, below this value contribution from AAI is aai_low
+aai_min <- 3409
+aai_low <- -750
+################## Table A1 #######################
+tA1 <- tbl_df(read.csv("tableA1.csv", stringsAsFactors=FALSE))
+tA1$below <- as.numeric(sub("%","",tA1$below))/100
+tA1$above <- as.numeric(sub("%","",tA1$above))/100
+tA1_cutoff <- 15000
+################## Table A3 #######################
+tA3 <- tbl_df(read.csv("tableA3.csv", stringsAsFactors=FALSE))
+tA3_addhh <- 4270
+tA3_addstd <- 3040
+################## Table A4 #######################
+tA4 <- tbl_df(read.csv("tableA4.csv", stringsAsFactors=FALSE))
+tA4$rate <- as.numeric(sub("%","",tA4$rate))/100
+################## Table A5 #######################
+tA5 <- tbl_df(read.csv("tableA5.csv", stringsAsFactors=FALSE))
+################## Table A6 #######################
+tA6 <- tbl_df(read.csv("tableA6.csv", stringsAsFactors=FALSE))
+tA6$rate <- as.numeric(sub("%","",tA6$rate))/100
+tA4_low <- -3409
+tA4_cont <- -750
+################## Table A7 #######################
+tA7 <- tbl_df(read.csv("tableA7.csv", stringsAsFactors=FALSE))
+tA7$rate <- as.numeric(sub("%","",tA7$rate))/100
+
+fafsa <- function(agi,p1_ei,p2_ei,ui,afi,fed_tax,assets,bus_farm,hh,kic,age,
+                  s_agi,s_ei,s_tax,s_assets,st){
+    # Total Income (Line 7) assuming that taxes are filed
+    total_income <- max(agi,0) + ui - afi # Line 7
+    # Total Allowances (Line 14) 
+    total_allowances <- max(fed_tax,0) + 
+        max(min(total_income, tA1_cutoff-1)*filter(tA1,state==st)$below +
+        max(total_income-tA1_cutoff, 0)*filter(tA1,state==st)$above,0) +
+        fica(p1_ei) + fica(p2_ei) +
+        filter(tA3,hsize==hh)[,kic+1] +
+        min(min(p1_ei,p2_ei)*eea_rate,eaa_amt)
+    # Available Income (Line 15) Note: Can be negative
+    avail_income <- total_income - total_allowances
+    # Contribution from Assets (Line 24)
+    cont_assets <- max((assets + 
+        max(bus_farm*tA4$rate[2],0) +
+        max((bus_farm-tA4$netWorth[2])*(tA4$rate[3]-tA4$rate[2]),0) +
+        max((bus_farm-tA4$netWorth[3])*(tA4$rate[4]-tA4$rate[3]),0) +
+        max((bus_farm-tA4$netWorth[4])*(tA4$rate[5]-tA4$rate[4]),0) -
+        filter(tA5,olderAge==age)$twoPar)*asset_conv_rate,0)
+    # Adjusted Available Income (Line 25) Note: Can be negative
+    aai <- avail_income + cont_assets
+    # Total Parent's Contribution from AAI (Line 26)
+    aai_cont <- max(aai*tA6$rate[1],-750) +
+        max((aai-tA6$AAI[1])*(tA6$rate[2]-tA6$rate[1]),0) +
+        max((aai-tA6$AAI[2])*(tA6$rate[3]-tA6$rate[2]),0) +
+        max((aai-tA6$AAI[3])*(tA6$rate[4]-tA6$rate[3]),0) +
+        max((aai-tA6$AAI[4])*(tA6$rate[5]-tA6$rate[4]),0) +
+        max((aai-tA6$AAI[5])*(tA6$rate[6]-tA6$rate[5]),0)
+    # Parent's Contribution (Line 28)
+    return(parent_cont <- max(aai_cont/kic,0))
+}
