@@ -149,7 +149,7 @@ r_dat <- dat %>% filter(age==retireAge) %>% select(-pens_eo,-pens_60,-pens_62,-g
 # exp <- spend$exp
 
 # Roth balance available
-rothAvail <- dat %>% summarise(sum(roth))
+rothAvail <- dat %>% filter(age<=retireAge) %>% summarise(sum(roth))
 
 #years to RMDs
 rmd_y <- 70-r_dat$age
