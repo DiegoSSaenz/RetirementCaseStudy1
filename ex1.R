@@ -1,12 +1,14 @@
-# Example 
 library(dplyr)
-library(gridExtra)
+# library(gridExtra)
 library(reshape2)
 library(ggplot2)
 
 source('TaxFunctions.R')
 source('input.R')
 
+dat <- tbl_df(read.csv("pay.csv", stringsAsFactors=FALSE))
+
+ex1 <-function(inDat=dat, retireAge=46, ladder=.04, tspRate=.04, rothRate=.07, taxAcctRate=.33, ret=.05) {
 #Calls functions to create appropriate tax brackets
 fTax <- fed_br(status)
 sTax <- st_br(state,status)
@@ -14,7 +16,8 @@ lTax <- loc_br(state,locality)
 has_loc <- hasLocality(state)
 
 # This is a starter "input file"
-dat <- tbl_df(read.csv("pay.csv", stringsAsFactors=FALSE))
+# dat <- tbl_df(read.csv("pay.csv", stringsAsFactors=FALSE))
+dat <- inDat
 
 # Calculate tax-deferred contributions
 # dat <- dat %>%
@@ -291,11 +294,21 @@ for(i in 1:(die+1-r_dat$age)){
 
 # rothBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(roth_bal)
 tradBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(trad_bal)
-hsaBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(hsa_bal)
+# hsaBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(hsa_bal)
 # taxBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(tax_bal)
 mort <- dat %>% filter(age>=retireAge, age<=die) %>% select(mortgage)
 
-dat_r <- data.frame(age,gross,net,pens,ss,tsp_bal,roth_bal,hsaBal,tax_bal,mort)
+dat_r <- data.frame(age=age,
+                    gross=gross,
+                    net=net,
+                    pens=pens,
+                    ss=ss,
+                    tsp_bal=tsp_bal,
+                    roth_bal=roth_bal,
+                    # hsa_bal=hsaBal$hsa_bal
+                    tax_bal=tax_bal
+                    # mort=mort$mortgage
+                    ) 
 
 # Add margin column
 dat_r <- tbl_df(dat_r) %>% mutate(avail=ss+tsp_bal+roth_bal+tax_bal)
@@ -307,9 +320,11 @@ write.table(dat_r, "retirement.out")
 
 plotDat <- tbl_df(melt(dat_r, id.vars=c("age")))
 
-ggplot(plotDat %>% filter(variable == "net" | variable == "avail"), aes(age, value)) +
-    geom_line() +
-    facet_grid(variable~., scales="free") +
-    labs(title=paste("Retire at", retireAge, "Case Study"))
-
-ggsave("net.png")
+# ggplot(plotDat %>% filter(variable == "net"), aes(age, value)) +
+#     geom_line() +
+#     facet_grid(variable~., scales="free") +
+#     labs(title=paste("Retire at", retireAge, "Case Study"))
+# 
+# ggsave("net.png")
+# plotDat
+}
