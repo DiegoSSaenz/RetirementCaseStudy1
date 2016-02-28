@@ -1,5 +1,5 @@
 # RetirementCaseStudy1
-A case study for retirement as government employee 
+A case study for retirement as government employee. Try out the [Shiny app](https://amritpatel.shinyapps.io/RetirementCaseStudy2/)!
 
 ###Key Assumptions:
 - Start work at 23
