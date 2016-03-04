@@ -1,2 +1,2 @@
-age,year,yos,gross,tsp_trad,tsp_roth,roth_ira,trad_ira,hsa,taxable,mortgage,home
-31,2016,7,170776,113526,0,27500,0,5250,25000,277688,70000
+age,year,yos,gross,tspT,tspT_bal,tspR,tspR_bal,rothIRA,rothIRA_bal,tradIRA,tradIRA_bal,hsa,hsa_bal,hsa_avail,taxable,tax_bal,mortgage,home
+31,2016,7,170776,113526,,0,,27500,,0,,5250,,,25000,,277688,70000

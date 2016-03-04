@@ -341,6 +341,7 @@ acct_opt <- function(age, age_leave,spend,ss,pens,tspT_bal,tspR_bal,
         tradIRA_conv <- 0
         tspT_with <- min(tspT_bal,need)
         tradIRA_with <- 0
+        rothAvail <- rothAvail + need
         hsa_with <- 0
         tspR_with <- max(min(tspR_bal,need)-hsa_with-tspT_with,0)
         tax_with <- max(min(tax_bal,need)-hsa_with-tspT_with-tspR_with,0)
@@ -384,10 +385,11 @@ acct_opt <- function(age, age_leave,spend,ss,pens,tspT_bal,tspR_bal,
         tspR_with <- 0
         tax_with <- min(tax_bal,need)
         rothIRA_with <- max(min(rothAvail,need)-
-                                -tax_with,0)
+                                tax_with,0)
         rothAvail <- (rothAvail - rothIRA_with)/(1+inflation)
     }
-    taxed <- tspT_with+tradIRA_with+hsa_with+pens+ss
+    taxed <- tspT_with+tspT_conv+tradIRA_with+tradIRA_conv+hsa_with+pens+ss
+    taxed_spend <- tspT_with+tradIRA_with+hsa_with+pens+ss
     tax_free <- tspR_with+rothIRA_with+tax_with
     tspT_bal <- tspT_bal - tspT_with - tspT_conv
     tspR_bal <- tspR_bal - tspR_with
@@ -396,7 +398,7 @@ acct_opt <- function(age, age_leave,spend,ss,pens,tspT_bal,tspR_bal,
     hsa_bal <- hsa_bal - hsa_with
     tax_bal <- tax_bal - tax_with
     return(list(tspT_bal,tspR_bal,tradIRA_bal,rothIRA_bal,
-                hsa_bal,tax_bal,rothAvail,taxed,tax_free))
+                hsa_bal,tax_bal,rothAvail,taxed,tax_free,taxed_spend))
 }
 ##########################################################
 ############## Available Funds Function  #################

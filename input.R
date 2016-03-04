@@ -5,6 +5,7 @@
 tsp_trad <- .05   # 5% self contributions
 tsp_match <- .05  # 5% Employer TSP Matching
 tsp_lim <- 18000  # TSP Contribution Limit
+file <- "pay1.csv" # File to use
 
 # Savings Rate: Savings = After-tax Income - Spending
 sav_rate <- 0.15
@@ -31,7 +32,7 @@ r_locality <- "Orlando"
 r_status <- "joint"
 
 # Make retirement age a variable
-retireAge <- 37
+retireAge <- 39
 age_leave <- retireAge  # Age stop working
 pens_age <- 57   # Age FERS Pension begins
 eo <- FALSE      # Whether offered Early Out

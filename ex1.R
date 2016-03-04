@@ -14,7 +14,7 @@ lTax <- loc_br(state,locality)
 has_loc <- hasLocality(state)
 
 # This is a starter "input file"
-dat <- tbl_df(read.csv("pay.csv", stringsAsFactors=FALSE))
+dat <- tbl_df(read.csv(file, stringsAsFactors=FALSE))
 
 # Calculate tax-deferred contributions
 # dat <- dat %>%
@@ -141,18 +141,12 @@ avail <- numeric(die+1-r_dat$age)
 for(i in 1:(die+1-r_dat$age)){
     if(i==1){
         age[i] <- r_dat$age
-        pens[i] <- 
-            if(age[i]>=pens_age) {
-                pens_0  
-            } else{
-                0
-            }
-        ss[i] <-
-            if(age[i]>=63) {
-                r_dat$ss*(.7)  
-            } else{
-                0
-            }
+        if(age[i]>=pens_age) {
+            pens[i] <- pens_0
+        }
+        if(age[i]>=63) {
+            ss[i] <- r_dat$ss*(.7)
+        }
         tspT_bal[i] <- r_dat$tsp_bal
         tspR_bal[i] <- 0
         tradIRA_bal[i] <- 0
@@ -163,53 +157,35 @@ for(i in 1:(die+1-r_dat$age)){
         update <- acct_opt(age[i], age_leave,spend,ss[i],pens[i],tspT_bal[i],
                  tspR_bal[i],tradIRA_bal[i],rothIRA_bal[i],hsa_bal[i],
                  tax_bal[i],rothAvail[i])
-        tspT_bal[i] <- update[[1]]*(1+ret)
-        tspR_bal[i] <- update[[2]]*(1+ret)
-        tradIRA_bal[i] <- update[[3]]*(1+ret)
-        rothIRA_bal[i] <- update[[4]]*(1+ret)
-        hsa_bal[i] <- update[[5]]*(1+ret)
-        tax_bal[i] <- update[[6]]*(1+ret)
-        rothAvail[i] <- update[[7]]
-        gross[i] <- update[[8]]+update[[9]] #taxed+untaxed income/withdrawals
-        net[i] <- net_r(update[[8]],fTax,sTax,lTax,has_loc)+update[[9]]
-        avail[i] <- available(age[i], age_leave,tspT_bal[i],
-                    tspR_bal[i],tradIRA_bal[i],rothIRA_bal[i],hsa_bal[i],
-                    tax_bal[i],rothAvail[i])
     }else{
         age[i] <- age[i-1]+1 
-        pens[i] <- 
-            if(age[i]==pens_age) {
-                pens_0  
-            }else if(age[i]>=63){
-                pens[i-1]
-            }else if(age[i]>pens_age){
-                pens[i-1]/(1+inflation)
-            }else{
-                0
-            }
-        ss[i] <-
-            if(age[i]>=63) {
-                r_dat$ss*(.7)  
-            } else{
-                0
-            }
+        if(age[i]==pens_age) {
+            pens[i] <- pens_0  
+        }else if(age[i]>=63){
+            pens[i] <- pens[i-1]
+        }else if(age[i]>pens_age){
+            pens[i] <- pens[i-1]/(1+inflation)
+        }
+        if(age[i]>=63) {
+            ss[i] <- r_dat$ss*(.7)
+        }
         update <- acct_opt(age[i], age_leave,spend,ss[i],pens[i],
                            tspT_bal[i-1],tspR_bal[i-1],
                            tradIRA_bal[i-1],rothIRA_bal[i-1],hsa_bal[i-1],
                            tax_bal[i-1],rothAvail[i-1])
-        tspT_bal[i] <- update[[1]]*(1+ret)
-        tspR_bal[i] <- update[[2]]*(1+ret)
-        tradIRA_bal[i] <- update[[3]]*(1+ret)
-        rothIRA_bal[i] <- update[[4]]*(1+ret)
-        hsa_bal[i] <- update[[5]]*(1+ret)
-        tax_bal[i] <- update[[6]]*(1+ret)
-        rothAvail[i] <- update[[7]]
-        gross[i] <- update[[8]]+update[[9]] #taxed+untaxed income/withdrawals
-        net[i] <- net_r(update[[8]],fTax,sTax,lTax,has_loc)+update[[9]]
-        avail[i] <- available(age[i], age_leave,tspT_bal[i],
-                              tspR_bal[i],tradIRA_bal[i],rothIRA_bal[i],hsa_bal[i],
-                              tax_bal[i],rothAvail[i])
     }
+    tspT_bal[i] <- update[[1]]*(1+ret)
+    tspR_bal[i] <- update[[2]]*(1+ret)
+    tradIRA_bal[i] <- update[[3]]*(1+ret)
+    rothIRA_bal[i] <- update[[4]]*(1+ret)
+    hsa_bal[i] <- update[[5]]*(1+ret)
+    tax_bal[i] <- update[[6]]*(1+ret)
+    rothAvail[i] <- update[[7]]
+    gross[i] <- update[[9]]+update[[10]] #taxed+untaxed income/withdrawals
+    net[i] <- net_r(update[[10]],fTax,sTax,lTax,has_loc)+update[[9]]
+    avail[i] <- available(age[i], age_leave,tspT_bal[i],
+                          tspR_bal[i],tradIRA_bal[i],rothIRA_bal[i],hsa_bal[i],
+                          tax_bal[i],rothAvail[i])
 }
 
 # rothBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(roth_bal)
@@ -231,7 +207,7 @@ write.table(dat_r, "retirement.out")
 
 plotDat <- tbl_df(melt(dat_r, id.vars=c("age")))
 
-ggplot(plotDat %>% filter(variable=="net" | variable=="avail" | variable=="tspT_bal" |
+ggplot(plotDat %>% filter(variable=="gross" | variable=="avail" | variable=="tspT_bal" |
                               variable=="rothIRA_bal" | variable=="hsa_bal" | variable=="tax_bal"), 
        aes(age, value)) +
     geom_line() +
