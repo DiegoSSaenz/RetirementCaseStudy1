@@ -94,116 +94,39 @@ for(i in 1:nrow(dat)){
 ##### Post-Retirement Calculation ######
 ########################################
 
-# r_dat <- dat %>% filter(age==age_leave)
-# # Set spending in retirement to be the same as last year of work
-# exp <- r_dat$spend
-# #years to RMDs
-# rmd_y <- 70-r_dat$age
-# for(i in 1:(101-r_dat$age)){
-#     if(i==1){
-#         age <- r_dat$age
-#         pens <- pension(gross_1,gross_2,gross_3,age_leave,r_dat$yos,age_leave,eo,inflation)
-#         ss <- 0
-#         tsp_bal <- r_dat$tsp_bal
-#         gross <- exp+20000
-#         tsp_bal <- tsp_bal*(1+ret) - exp-20000+pens
-#         net <- net_r(gross,fTax,sTax,lTax,has_loc)
-#         taxable <- 0
-#     }else if(i<(63-r_dat$age)){
-#         age <- append(age,age[i-1]+1)
-#         pens <- append(pens,pens[i-1]/(1+inflation))
-#         ss <- append(ss, 0)
-#         gross <- append(gross, exp+20000)
-#         tsp_bal <- append(tsp_bal, tsp_bal[i-1]*(1+ret) - 
-#                               exp-20000 + pens[i])
-#         net <- append(net, net_r(gross[i],fTax,sTax,lTax,has_loc))
-#         taxable <- append(taxable, 0)
-#     }else if(i>70-r_dat$age){
-#         age <- append(age,age[i-1]+1)
-#         pens <- append(pens,pens[i-1])
-#         ss <- append(ss, r_dat$ss*(.7+.325))
-#         gross <- append(gross, pens[i] + r_dat$ss*(.7+.325) +
-#                             tsp_bal[i-1]/rmd[i-rmd_y])
-#         tsp_bal <- append(tsp_bal, tsp_bal[i-1]*(1+ret) - 
-#                               tsp_bal[i-1]/rmd[i-rmd_y])
-#         net <- append(net, net_r(gross[i],fTax,sTax,lTax,has_loc))
-#         taxable <- append(taxable, taxable[i-1]*(1+ret)+ net[i] - exp)
-#     }else{
-#         age <- append(age,age[i-1]+1)
-#         pens <- append(pens,pens[i-1])
-#         ss <- append(ss, r_dat$ss*(.7+.325))
-#         gross <- append(gross, exp+20000)
-#         tsp_bal <- append(tsp_bal, tsp_bal[i-1]*(1+ret) - exp-20000 +
-#                               pens[i] + r_dat$ss*(.7+.325))
-#         net <- append(net, net_r(gross[i],fTax,sTax,lTax,has_loc))
-#         taxable <- append(taxable, 0)
-#     }
-# }
-# dat_r <- data.frame(age,gross,net,pens,ss,tsp_bal)
-# pdf("retirement.pdf",height=15,width=8.5)
-# grid.table(round(dat_r,2))
-# dev.off()
-
 #Calls functions to create appropriate retirement tax brackets
 fTax <- fed_br(r_status)
-sTax <- st_br(state,r_status)
-lTax <- loc_br(state,r_locality)
+sTax <- st_br(r_state,r_status)
+lTax <- loc_br(r_state,r_locality)
 has_loc <- hasLocality(r_state)
-
-h3 <- dat[dat$age %in% (age_leave-2):age_leave,]
-gross_3 <- h3$gross[1];gross_2 <- h3$gross[2];gross_1 <- h3$gross[3]
 
 r_dat <- dat %>% filter(age==retireAge) %>% select(-gross,-tsp,-roth,-trad,-hsa)
 
-# Add capability to specify desired spending level? Otherwise, should depend on if mortgage exists, taxable bal, and roth bal
-# spend <- r_dat %>% mutate(exp=ifelse(r_dat$age < 57,
-#                           ifelse(mortgage > 0, (roth_bal+tax_bal-mort*12)/(58-r_dat$age), roth_bal+taxable),
-#                           tsp_bal/(151-r_dat$age))) %>%
-#         select(exp)
+# Set spending to spend_ret percent of last year of work
+spend <- r_dat$spend*spend_ret
 
-# Check balances
-# tail(dat, 50) %>% select(-pens_eo,-pens_60,-pens_62,-gross,-tsp,-roth,-trad,-hsa,-cashflow) 
+# Pension at year of first collection
+high_3 <- dat[dat$age %in% (age_leave-2):age_leave,]$gross
+pens_0 <- pension(high_3[3],high_3[2],high_3[1],age_leave,
+                r_dat$yos,pens_age,eo,inflation)
+pens_0 <- pens_0/(1+inflation)^(pens_age-age_leave)
 
-# exp <- r_dat$net
-# exp <- spend$exp
-
-# Roth balance available
-rothAvail <- dat %>% filter(age<=retireAge) %>% summarise(sum(roth))
+# Inflation Adjusted Roth IRA balance available
+inf_adj <- 1/(1+inflation)^(retireAge-filter(dat,age<=retireAge)$age)
+rothAvail_0 <- sum(filter(dat,age<=retireAge)$roth*inf_adj)
 
 #years to RMDs
 rmd_y <- 70-r_dat$age
 
-# Loop modified w/ following assumptions:
-# 
-# - All vectors are pre-allocated
-# - Turned off PDF printing (significantly increases runtime)
-# - Retirement age is now a variable
-# - Add logic accounting for "early" retirement which makes withdrawals @?% from TSP based on Roth ladder concept; the % is a variable
-# - Begin drawing pension at 57; none before
-# - SS + pension is still re-invested into TSP
-# - Added age-dependent pension and SS vector initializations
-# - Assumes variable TSP withdrawal rate after 63
-# - Taxable investment account is factored in
-# - HSA balance is not factored in
-# - Roth IRA balance is factored in
-# - Traditional IRA is not factored in
-# - Mortgage balance not factored in (optimize taxable balance to payoff mortgage once retire?)
-# - Kid(s) going to college not factored in
-# - Spending vs. time not factored in
-# - Available account balance column added
-# - Married filing jointly (assumes two income streams; one teacher + one GG14 NRC emp)
-# - Maxing TSP and 403(b) beginning in 8th year of career (~5% TSP matching before)
-# - Maxing HSA in 8th year of career
-# - Maxing Roth IRA in 8th year of career
-# - Deposit of $25k in taxable investment account in 8th year of career
-# - Could pay mortgage off at retirement by using ~$50k in taxable investment account
-# - Roth IRA to help pay for college if necessary (~$187k available -- i.e. contributions only)
-
 age <- numeric(die+1-r_dat$age)
 pens <- numeric(die+1-r_dat$age)
 ss <- numeric(die+1-r_dat$age)
-tsp_bal <- numeric(die+1-r_dat$age)
-roth_bal <- numeric(die+1-r_dat$age)
+tspT_bal <- numeric(die+1-r_dat$age)
+tspR_bal <- numeric(die+1-r_dat$age)
+tradIRA_bal <- numeric(die+1-r_dat$age)
+rothIRA_bal <- numeric(die+1-r_dat$age)
+rothAvail <- numeric(die+1-r_dat$age)
+hsa_bal <- numeric(die+1-r_dat$age)
 tax_bal <- numeric(die+1-r_dat$age)
 gross <- numeric(die+1-r_dat$age)
 net <- numeric(die+1-r_dat$age)
@@ -212,8 +135,8 @@ for(i in 1:(die+1-r_dat$age)){
     if(i==1){
         age[i] <- r_dat$age
         pens[i] <- 
-            if(age[i]>=57) {
-                pension(gross_1,gross_2,gross_3,age_leave,r_dat$yos,pens_age,eo,inflation)  
+            if(age[i]>=pens_age) {
+                pens_0  
             } else{
                 0
             }
@@ -223,82 +146,69 @@ for(i in 1:(die+1-r_dat$age)){
             } else{
                 0
             }
-        tsp_bal[i] <- r_dat$tsp_bal
-        roth_bal[i] <- as.numeric(rothAvail)
+        tspT_bal[i] <- r_dat$tsp_bal
+        tspR_bal[i] <- 0
+        tradIRA_bal[i] <- 0
+        rothIRA_bal[i] <- r_dat$roth_bal
+        rothAvail[i] <- rothAvail_0
         tax_bal[i] <- r_dat$tax_bal
-        tsp_bal[i] <- tsp_bal[i]*(1+ret) - tsp_bal[i]*ladder
-        roth_bal[i] <- roth_bal[i] - roth_bal[i]*rothRate
-        tax_bal[i] <- tax_bal[i]*(1+ret) - tax_bal[i]*taxAcctRate
-        gross[i] <- tsp_bal[i]*ladder + 
-            roth_bal[i]*rothRate + 
-            tax_bal[i]*taxAcctRate
-        net[i] <- net_r(gross[i],fTax,sTax,lTax,has_loc)
-        # taxable[i] <- 0
-    }else if(i<(63-r_dat$age)){
-        age[i] <- age[i-1]+1 
-        if (i<=58-r_dat$age) {
-            pens[i] <- pens[i-1]
-            tsp_bal[i] <- tsp_bal[i-1]*(1+ret)-tsp_bal[i-1]*ladder 
-            roth_bal[i] <- roth_bal[i-1]*(1+ret)-roth_bal[i-1]*rothRate
-            tax_bal[i] <- tax_bal[i-1]*(1+ret)-tax_bal[i-1]*taxAcctRate
-            ss[i] <- 0            
-            gross[i] <- tsp_bal[i]*ladder + roth_bal[i]*rothRate + tax_bal[i]*taxAcctRate
-            net[i] <- net_r(gross[i],fTax,sTax,lTax,has_loc)
-            # taxable[i] <- 0
-            if (i==58-r_dat$age) pens[i] <- pension(gross_1,gross_2,gross_3,age_leave,r_dat$yos,pens_age,eo,inflation)
-            # exp[i] <- tsp_bal[i-1]*.04
-        } else if (i<=63-r_dat$age & i>58-r_dat$age) {
-            pens[i] <- pens[i-1]
-            tsp_bal[i] <- tsp_bal[i-1]*(1+ret)-tsp_bal[i-1]*ladder
-            roth_bal[i] <- roth_bal[i-1]*(1+ret)-roth_bal[i-1]*rothRate   
-            tax_bal[i] <- tax_bal[i-1]*(1+ret)-tax_bal[i-1]*taxAcctRate
-            ss[i] <- 0            
-            gross[i] <- tsp_bal[i]*ladder + pens[i] + roth_bal[i]*rothRate + tax_bal[i]*taxAcctRate
-            net[i] <- net_r(gross[i],fTax,sTax,lTax,has_loc)
-            # taxable[i] <- 0
-        }    
-    }else if(i>70-r_dat$age){
-        age[i] <- age[i-1]+1
-        pens[i] <- pens[i-1]
-        tsp_bal[i] <- tsp_bal[i-1]*(1+ret) - 
-                              tsp_bal[i-1]/rmd[i-rmd_y]        
-        roth_bal[i] <- roth_bal[i-1]*(1+ret)-roth_bal[i-1]*rothRate
-        tax_bal[i] <- tax_bal[i-1]*(1+ret)-tax_bal[i-1]*0
-        ss[i] <- r_dat$ss*(.7)
-        gross[i] <- pens[i] +
-                            r_dat$ss*(.7) +
-                            tsp_bal[i]/rmd[i-rmd_y] +
-                            roth_bal[i]*rothRate +
-                            tax_bal[i]*0
-        net[i] <- net_r(gross[i],fTax,sTax,lTax,has_loc)
-        # taxable[i] <- taxable[i-1]*(1+ret)+ net[i] - exp
+        hsa_bal[i] <- r_dat$hsa_bal
+        update <- acct_opt(age[i], age_leave,spend,ss[i],pens[i],tspT_bal[i],
+                 tspR_bal[i],rothIRA_bal[i],tradIRA_bal[i],hsa_bal[i],
+                 tax_bal[i],rothAvail[i])
+        tspT_bal[i] <- update[[1]]*(1+ret)
+        tspR_bal[i] <- update[[2]]*(1+ret)
+        tradIRA_bal[i] <- update[[3]]*(1+ret)
+        rothIRA_bal[i] <- update[[4]]*(1+ret)
+        hsa_bal[i] <- update[[5]]*(1+ret)
+        tax_bal[i] <- update[[6]]*(1+ret)
+        rothAvail[i] <- update[[7]]
+        gross[i] <- update[[8]]+update[[9]] #taxed+untaxed income/withdrawals
+        net[i] <- net_r(update[[8]],fTax,sTax,lTax,has_loc)+update[[9]]
     }else{
-        age[i] <- age[i-1]+1
-        pens[i] <- pens[i-1]
-        tsp_bal[i] <- tsp_bal[i-1]*(1+ret) - tsp_bal[i-1]*tspRate         
-        roth_bal[i] <- roth_bal[i-1]*(1+ret)-roth_bal[i-1]*rothRate
-        tax_bal[i] <- tax_bal[i-1]*(1+ret)-tax_bal[i-1]*0
-        ss[i] <- r_dat$ss*(.7)
-        gross[i] <- pens[i] + 
-                            r_dat$ss*(.7) +
-                            tsp_bal[i]*tspRate +
-                            roth_bal[i]*rothRate +
-                            tax_bal[i]*0
-        net[i] <- net_r(gross[i],fTax,sTax,lTax,has_loc)
-        # taxable[i] <- 0
+        age[i] <- age[i-1]+1 
+        pens[i] <- 
+            if(age[i]==pens_age) {
+                pens_0  
+            }else if(age[i]>=63){
+                pens[i-1]
+            }else if(age[i]>pens_age){
+                pens[i-1]/(1+inflation)
+            }else{
+                0
+            }
+        ss[i] <-
+            if(age[i]>=63) {
+                r_dat$ss*(.7)  
+            } else{
+                0
+            }
+        update <- acct_opt(age[i], age_leave,spend,ss[i],pens[i],
+                           tspT_bal[i-1],tspR_bal[i-1],rothIRA_bal[i-1],
+                           tradIRA_bal[i-1],hsa_bal[i-1],
+                           tax_bal[i-1],rothAvail[i-1])
+        tspT_bal[i] <- update[[1]]*(1+ret)
+        tspR_bal[i] <- update[[2]]*(1+ret)
+        tradIRA_bal[i] <- update[[3]]*(1+ret)
+        rothIRA_bal[i] <- update[[4]]*(1+ret)
+        hsa_bal[i] <- update[[5]]*(1+ret)
+        tax_bal[i] <- update[[6]]*(1+ret)
+        rothAvail[i] <- update[[7]]
+        gross[i] <- update[[8]]+update[[9]] #taxed+untaxed income/withdrawals
+        net[i] <- net_r(update[[8]],fTax,sTax,lTax,has_loc)+update[[9]]
     }
 }
 
 # rothBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(roth_bal)
-tradBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(trad_bal)
+tradBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(tradIRA_bal)
 hsaBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(hsa_bal)
 # taxBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(tax_bal)
 mort <- dat %>% filter(age>=retireAge, age<=die) %>% select(mortgage)
 
-dat_r <- data.frame(age,gross,net,pens,ss,tsp_bal,roth_bal,hsaBal,tax_bal,mort)
+dat_r <- data.frame(age,gross,net,pens,ss,tspT_bal,rothIRA_bal,hsaBal,tax_bal,mort)
 
 # Add margin column
-dat_r <- tbl_df(dat_r) %>% mutate(avail=ss+tsp_bal+roth_bal+tax_bal)
+dat_r <- tbl_df(dat_r) %>% mutate(avail=ss+tspT_bal+rothIRA_bal+tax_bal)
 
 write.table(dat_r, "retirement.out")
 # pdf("retirement.pdf",height=(die+1-r_dat$age)*15/44,width=11)
