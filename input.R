@@ -34,10 +34,11 @@ ret <- .05
 #inflation rate
 inflation <- .025
 # Make retirement age a variable
-retireAge <- 37
-age_leave <- 37  # Age stop working
+retireAge <- 38
+age_leave <- retireAge  # Age stop working
 pens_age <- 57   # Age FERS Pension begins
 eo <- FALSE      # Whether offered Early Out
+spend_ret <- 0.85 # Percent of spending in retirement
 # Percentage for Roth ladder
 ladder <- .04
 # Percentage for TSP withdrawal rate between 62 and 70
