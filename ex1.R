@@ -38,14 +38,15 @@ dat <- bind_cols(dat, as.data.frame(net))
 dat$net <- dat$net - fers*dat$gross
 
 # Calculate Savings and Spending based on savings rate (sav_rate)
-dat <- dat %>% mutate(spend = net * (1-sav_rate))
-dat <- dat %>% mutate(savings = (net-spend))
+# dat <- dat %>% mutate(spend = net * (1-sav_rate))
+# dat <- dat %>% mutate(savings = (net-spend))
 
 # Create TSP contribution data based on minimum contributions
 dat <-
     dat %>%
     # Create additional data fields for sensitivity study
-    mutate(tsp_bal  = gross,
+    mutate(spend = gross,
+           tsp_bal  = gross,
            roth_bal = gross,
            trad_bal = gross,
            hsa_bal  = gross,
@@ -86,6 +87,10 @@ for(i in 1:nrow(dat)){
     }
 }
 
+# Calculate spending based on money not saved
+dat$spend <- dat$net - dat$roth - dat$hsa - dat$taxable
+
+
 # pdf("working.pdf",height=22,width=17)
 # grid.table(round(dat,2))
 # dev.off()
@@ -103,7 +108,8 @@ has_loc <- hasLocality(r_state)
 r_dat <- dat %>% filter(age==retireAge) %>% select(-gross,-tsp,-roth,-trad,-hsa)
 
 # Set spending to spend_ret percent of last year of work
-spend <- r_dat$spend*spend_ret
+# spend <- r_dat$spend*spend_ret
+spend <- spend_const
 
 # Pension at year of first collection
 high_3 <- dat[dat$age %in% (age_leave-2):age_leave,]$gross
@@ -130,6 +136,7 @@ hsa_bal <- numeric(die+1-r_dat$age)
 tax_bal <- numeric(die+1-r_dat$age)
 gross <- numeric(die+1-r_dat$age)
 net <- numeric(die+1-r_dat$age)
+avail <- numeric(die+1-r_dat$age)
 
 for(i in 1:(die+1-r_dat$age)){
     if(i==1){
@@ -154,7 +161,7 @@ for(i in 1:(die+1-r_dat$age)){
         tax_bal[i] <- r_dat$tax_bal
         hsa_bal[i] <- r_dat$hsa_bal
         update <- acct_opt(age[i], age_leave,spend,ss[i],pens[i],tspT_bal[i],
-                 tspR_bal[i],rothIRA_bal[i],tradIRA_bal[i],hsa_bal[i],
+                 tspR_bal[i],tradIRA_bal[i],rothIRA_bal[i],hsa_bal[i],
                  tax_bal[i],rothAvail[i])
         tspT_bal[i] <- update[[1]]*(1+ret)
         tspR_bal[i] <- update[[2]]*(1+ret)
@@ -165,6 +172,9 @@ for(i in 1:(die+1-r_dat$age)){
         rothAvail[i] <- update[[7]]
         gross[i] <- update[[8]]+update[[9]] #taxed+untaxed income/withdrawals
         net[i] <- net_r(update[[8]],fTax,sTax,lTax,has_loc)+update[[9]]
+        avail[i] <- available(age[i], age_leave,tspT_bal[i],
+                    tspR_bal[i],tradIRA_bal[i],rothIRA_bal[i],hsa_bal[i],
+                    tax_bal[i],rothAvail[i])
     }else{
         age[i] <- age[i-1]+1 
         pens[i] <- 
@@ -184,8 +194,8 @@ for(i in 1:(die+1-r_dat$age)){
                 0
             }
         update <- acct_opt(age[i], age_leave,spend,ss[i],pens[i],
-                           tspT_bal[i-1],tspR_bal[i-1],rothIRA_bal[i-1],
-                           tradIRA_bal[i-1],hsa_bal[i-1],
+                           tspT_bal[i-1],tspR_bal[i-1],
+                           tradIRA_bal[i-1],rothIRA_bal[i-1],hsa_bal[i-1],
                            tax_bal[i-1],rothAvail[i-1])
         tspT_bal[i] <- update[[1]]*(1+ret)
         tspR_bal[i] <- update[[2]]*(1+ret)
@@ -196,28 +206,34 @@ for(i in 1:(die+1-r_dat$age)){
         rothAvail[i] <- update[[7]]
         gross[i] <- update[[8]]+update[[9]] #taxed+untaxed income/withdrawals
         net[i] <- net_r(update[[8]],fTax,sTax,lTax,has_loc)+update[[9]]
+        avail[i] <- available(age[i], age_leave,tspT_bal[i],
+                              tspR_bal[i],tradIRA_bal[i],rothIRA_bal[i],hsa_bal[i],
+                              tax_bal[i],rothAvail[i])
     }
 }
 
 # rothBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(roth_bal)
-tradBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(tradIRA_bal)
-hsaBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(hsa_bal)
+# tradBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(tradIRA_bal)
+# hsaBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(hsa_bal)
 # taxBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(tax_bal)
 mort <- dat %>% filter(age>=retireAge, age<=die) %>% select(mortgage)
 
-dat_r <- data.frame(age,gross,net,pens,ss,tspT_bal,rothIRA_bal,hsaBal,tax_bal,mort)
+dat_r <- data.frame(age,gross,net,pens,ss,tspT_bal,tspR_bal,tradIRA_bal,
+                    rothIRA_bal,hsa_bal,tax_bal,avail,mort)
 
 # Add margin column
-dat_r <- tbl_df(dat_r) %>% mutate(avail=ss+tspT_bal+rothIRA_bal+tax_bal)
+dat_r <- tbl_df(dat_r) # %>% mutate(avail=ss+tspT_bal+rothIRA_bal+tax_bal)
 
 write.table(dat_r, "retirement.out")
-# pdf("retirement.pdf",height=(die+1-r_dat$age)*15/44,width=11)
+# pdf("retirement.pdf",height=(die+1-r_dat$age)*15/44,width=12)
 # grid.table(round(dat_r,2))
 # dev.off()
 
 plotDat <- tbl_df(melt(dat_r, id.vars=c("age")))
 
-ggplot(plotDat %>% filter(variable == "net" | variable == "avail"), aes(age, value)) +
+ggplot(plotDat %>% filter(variable=="net" | variable=="avail" | variable=="tspT_bal" |
+                              variable=="rothIRA_bal" | variable=="hsa_bal" | variable=="tax_bal"), 
+       aes(age, value)) +
     geom_line() +
     facet_grid(variable~., scales="free") +
     labs(title=paste("Retire at", retireAge, "Case Study"))
