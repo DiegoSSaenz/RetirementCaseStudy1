@@ -29,16 +29,14 @@ status <- "joint"
 r_state <- "Florida"
 r_locality <- "Orlando"
 r_status <- "joint"
-#inflation adjusted returns
-ret <- .05
-#inflation rate
-inflation <- .025
+
 # Make retirement age a variable
-retireAge <- 38
+retireAge <- 37
 age_leave <- retireAge  # Age stop working
 pens_age <- 57   # Age FERS Pension begins
 eo <- FALSE      # Whether offered Early Out
-spend_ret <- 0.85 # Percent of spending in retirement
+spend_ret <- 0.7 # Percent of spending in retirement
+spend_const <- 45000 # Spending in retirement as a set value
 # Percentage for Roth ladder
 ladder <- .04
 # Percentage for TSP withdrawal rate between 62 and 70

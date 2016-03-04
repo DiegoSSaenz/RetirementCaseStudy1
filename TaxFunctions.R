@@ -296,10 +296,12 @@ rmd_per <- c(27.4,26.5,25.6,24.7,23.8,22.9,22.0,21.2,20.3,19.5,18.7,17.9,
 
 # First Iteration of account withdrawal optimization
 acct_opt <- function(age, age_leave,spend,ss,pens,tspT_bal,tspR_bal,
-                     rothIRA_bal,tradIRA_bal,hsa_bal,tax_bal,
+                     tradIRA_bal,rothIRA_bal,hsa_bal,tax_bal,
                      rothAvail){
     if(age>=70){
         need <- spend - pens - ss
+        tspT_conv <- 0
+        tradIRA_conv <- 0
         tspT_with <- max(tspT_bal/rmd_per[age-69],min(tspT_bal,need))
         tradIRA_with <- max(tradIRA_bal/rmd_per[age-69],
                             max(min(tradIRA_bal,need)-tspT_with,0))
@@ -313,6 +315,8 @@ acct_opt <- function(age, age_leave,spend,ss,pens,tspT_bal,tspR_bal,
                                 hsa_with-tspT_with-tspR_with-tax_with,0)
     }else if(age>=65){
         need <- spend - pens - ss
+        tspT_conv <- 0
+        tradIRA_conv <- 0
         tspT_with <- min(tspT_bal,need)
         tradIRA_with <- max(min(tradIRA_bal,need)-tspT_with,0)
         hsa_with <- max(min(hsa_bal,need)-tspT_with-tradIRA_with,0)
@@ -322,6 +326,8 @@ acct_opt <- function(age, age_leave,spend,ss,pens,tspT_bal,tspR_bal,
                                 hsa_with-tspT_with-tspR_with-tax_with,0)
     }else if(age>=60){
         need <- spend - pens - ss
+        tspT_conv <- 0
+        tradIRA_conv <- 0
         tspT_with <- min(tspT_bal,need)
         tradIRA_with <- max(min(tradIRA_bal,need)-tspT_with,0)
         hsa_with <- 0
@@ -331,6 +337,8 @@ acct_opt <- function(age, age_leave,spend,ss,pens,tspT_bal,tspR_bal,
                                 hsa_with-tspT_with-tspR_with-tax_with,0)
     }else if(retireAge>=55 & age>=55){
         need <- spend - pens #  - ss
+        tspT_conv <- 0
+        tradIRA_conv <- 0
         tspT_with <- min(tspT_bal,need)
         tradIRA_with <- 0
         hsa_with <- 0
@@ -340,9 +348,11 @@ acct_opt <- function(age, age_leave,spend,ss,pens,tspT_bal,tspR_bal,
                                 hsa_with-tspT_with-tspR_with-tax_with,0)
     }else if(age >=55){
         need <- spend - pens # - ss
+        tspT_conv <- 0
+        tradIRA_conv <- 0
         tspT_with <- 0
         tradIRA_with <- 0
-        rothAvail <- rothAvail + spend
+        rothAvail <- rothAvail + need
         hsa_with <- 0
         tspR_with <- 0
         tax_with <- max(min(tax_bal,need)-hsa_with-tspT_with-tspR_with,0)
@@ -351,36 +361,57 @@ acct_opt <- function(age, age_leave,spend,ss,pens,tspT_bal,tspR_bal,
         rothAvail <- (rothAvail - rothIRA_with)/(1+inflation)
     }else if(age>=retireAge+5){
         need <- spend - pens # - ss
-        tspT_with <- min(tspT_bal,spend*(1+inflation)^5)
-        tradIRA_with <- max(min(tradIRA_bal,spend*(1+inflation)^5)-tspT_with,0)
-        rothIRA_bal <- rothIRA_bal+tspT_with+tradIRA_with
-        rothAvail <- rothAvail + spend        
+        tspT_conv <- min(tspT_bal,need*(1+inflation)^5)
+        tradIRA_conv <- max(min(tradIRA_bal,need*(1+inflation)^5)-tspT_conv,0)
+        rothIRA_bal <- rothIRA_bal+tspT_conv+tradIRA_conv
+        tspT_with <- 0
+        tradIRA_with <- 0
+        rothAvail <- rothAvail + need
         hsa_with <- 0
         tspR_with <- 0
-        tax_with <- max(min(tax_bal,need)-hsa_with-tspT_with-tspR_with,0)
+        tax_with <- max(min(tax_bal,need),0)
         rothIRA_with <- max(min(rothAvail,need)-
-                                hsa_with-tspT_with-tspR_with-tax_with,0)
+                                tax_with,0)
         rothAvail <- (rothAvail - rothIRA_with)/(1+inflation)
     }else{
         need <- spend # - pens - ss
-        tspT_with <- min(tspT_bal,spend*(1+inflation)^5)
-        tradIRA_with <- max(min(tradIRA_bal,spend*(1+inflation)^5)-tspT_with,0)
-        rothIRA_bal <- rothIRA_bal+tspT_with+tradIRA_with        
+        tspT_conv <- min(tspT_bal,need*(1+inflation)^5)
+        tradIRA_conv <- max(min(tradIRA_bal,need*(1+inflation)^5)-tspT_conv,0)
+        rothIRA_bal <- rothIRA_bal+tspT_conv+tradIRA_conv
+        tspT_with <- 0
+        tradIRA_with <- 0
         hsa_with <- 0
         tspR_with <- 0
-        tax_with <- max(min(tax_bal,need)-hsa_with-tspT_with-tspR_with,0)
+        tax_with <- min(tax_bal,need)
         rothIRA_with <- max(min(rothAvail,need)-
-                                hsa_with-tspT_with-tspR_with-tax_with,0)
+                                -tax_with,0)
         rothAvail <- (rothAvail - rothIRA_with)/(1+inflation)
     }
     taxed <- tspT_with+tradIRA_with+hsa_with+pens+ss
     tax_free <- tspR_with+rothIRA_with+tax_with
-    tspT_bal <- tspT_bal - tspT_with
+    tspT_bal <- tspT_bal - tspT_with - tspT_conv
     tspR_bal <- tspR_bal - tspR_with
-    tradIRA_bal <- tradIRA_bal - tradIRA_with
+    tradIRA_bal <- tradIRA_bal - tradIRA_with - tradIRA_conv
     rothIRA_bal <- rothIRA_bal - rothIRA_with
     hsa_bal <- hsa_bal - hsa_with
     tax_bal <- tax_bal - tax_with
     return(list(tspT_bal,tspR_bal,tradIRA_bal,rothIRA_bal,
                 hsa_bal,tax_bal,rothAvail,taxed,tax_free))
+}
+##########################################################
+############## Available Funds Function  #################
+##########################################################
+# Calculates available funds
+available <- function(age, age_leave,tspT_bal,tspR_bal,
+                      tradIRA_bal,rothIRA_bal,hsa_bal,tax_bal,
+                      rothAvail){
+    if(age>=65){
+        return(tspT_bal+tspR_bal+tradIRA_bal+rothIRA_bal+hsa_bal+tax_bal)
+    }else if(age>=60){
+        return(tspT_bal+tspR_bal+tradIRA_bal+rothIRA_bal+tax_bal)
+    }else if(retireAge>=55 & age>=55){
+        return(tspT_bal+tspR_bal+rothAvail+tax_bal)
+    }else{
+        return(rothAvail+tax_bal)
+    }
 }
