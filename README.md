@@ -11,6 +11,13 @@ A case study for retirement as government employee. Try out the [Shiny app](http
 - Income, Tax Brackets, Social Security are inflation adjusted
 - Pay progression in pay.csv
 
+####3/3/2016 Modifications
+- Implemented a spend column based on a savings rate
+- Retirement spending based on a percent of pre-retirement spending
+- Added acct_opt function which tries to optimize account withdrawals including implementing a Roth Conversion Ladder while trying to maintain a constant level of spending
+- Implemented the acct_opt function in the retirement loop
+- Now draws down retirement accounts to zero while maintaining constant-ish level of spending
+
 ####2/27/2016 6:38pm Modifications
 - Added FAFSA (Federal Methodology) Expected Family Contribution  
 
