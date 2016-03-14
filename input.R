@@ -18,8 +18,9 @@ aime <- 0
 # FERS Contribution Percent FERS=0.8%, FERS-RAE=3.1% (1/1/2013), FERS-FRAE=4.4% (1/1/2014)
 fers <- 0.008
 
-#inflation adjusted returns
-ret <- .05
+#inflation adjusted Values
+ret <- .05 # inflation adjusted investment returns
+raises <- 0  # inflation adjusted pay increases
 #inflation rate
 inflation <- .025
 state <- "Maryland"
@@ -31,13 +32,15 @@ r_state <- "Florida"
 r_locality <- "Orlando"
 r_status <- "joint"
 
-# Make retirement age a variable
-retireAge <- 39
+# Retirement Assumptions
+retireAge <- 39  # Retirement age
 age_leave <- retireAge  # Age stop working
 pens_age <- 57   # Age FERS Pension begins
 eo <- FALSE      # Whether offered Early Out
 spend_ret <- 0.7 # Percent of spending in retirement
 spend_const <- 45000 # Spending in retirement as a set value
+# k1_age <- -29 # age of first kid relative to your age
+
 # Percentage for Roth ladder
 ladder <- .04
 # Percentage for TSP withdrawal rate between 62 and 70

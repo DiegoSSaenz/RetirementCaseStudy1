@@ -16,6 +16,10 @@ has_loc <- hasLocality(state)
 # This is a starter "input file"
 dat <- tbl_df(read.csv(file, stringsAsFactors=FALSE))
 
+########################################
+##### Pre-Retirement Calculation ######
+########################################
+
 # Calculate tax-deferred contributions
 # dat <- dat %>%
 #     mutate(tsp = pmin(gross * tsp_trad,tsp_lim))
@@ -137,6 +141,8 @@ tax_bal <- numeric(die+1-r_dat$age)
 gross <- numeric(die+1-r_dat$age)
 net <- numeric(die+1-r_dat$age)
 avail <- numeric(die+1-r_dat$age)
+efc <- numeric(die+1-r_dat$age)
+# kic <- numeric(die+1-r_dat$age)
 
 for(i in 1:(die+1-r_dat$age)){
     if(i==1){
@@ -181,11 +187,17 @@ for(i in 1:(die+1-r_dat$age)){
     hsa_bal[i] <- update[[5]]*(1+ret)
     tax_bal[i] <- update[[6]]*(1+ret)
     rothAvail[i] <- update[[7]]
-    gross[i] <- update[[9]]+update[[10]] #taxed+untaxed income/withdrawals
-    net[i] <- net_r(update[[10]],fTax,sTax,lTax,has_loc)+update[[9]]
+    taxed <- update[[8]] # all of taxed income including conversions
+    tax_free <- update[[9]] # tax free money to spend
+    taxed_spend <- update[[10]] # taxed money to spend
+    gross[i] <- taxed_spend+tax_free #taxed+untaxed income/withdrawals
+    net[i] <- net_r(taxed_spend,fTax,sTax,lTax,has_loc)+tax_free
     avail[i] <- available(age[i], age_leave,tspT_bal[i],
                           tspR_bal[i],tradIRA_bal[i],rothIRA_bal[i],hsa_bal[i],
                           tax_bal[i],rothAvail[i])
+    efc[i] <- fafsa(agi=taxed,p1_ei=0,p2_ei=0,tax_free,afi=0,
+                    fed_tax=fed_tax(taxed,fTax),assets=tax_bal[i],
+                    bus_farm=0,hh=3,kic=1,age[i],st=r_state)
 }
 
 # rothBal <- dat %>% filter(age>=retireAge, age<=die) %>% select(roth_bal)
@@ -195,7 +207,7 @@ for(i in 1:(die+1-r_dat$age)){
 mort <- dat %>% filter(age>=retireAge, age<=die) %>% select(mortgage)
 
 dat_r <- data.frame(age,gross,net,pens,ss,tspT_bal,tspR_bal,tradIRA_bal,
-                    rothIRA_bal,hsa_bal,tax_bal,avail,mort)
+                    rothIRA_bal,hsa_bal,tax_bal,avail,efc,mort)
 
 # Add margin column
 dat_r <- tbl_df(dat_r) # %>% mutate(avail=ss+tspT_bal+rothIRA_bal+tax_bal)
@@ -207,8 +219,10 @@ write.table(dat_r, "retirement.out")
 
 plotDat <- tbl_df(melt(dat_r, id.vars=c("age")))
 
-ggplot(plotDat %>% filter(variable=="gross" | variable=="avail" | variable=="tspT_bal" |
-                              variable=="rothIRA_bal" | variable=="hsa_bal" | variable=="tax_bal"), 
+ggplot(plotDat %>% filter(variable=="gross" | variable=="avail" | 
+                              variable=="tspT_bal" | variable=="rothIRA_bal" | 
+                              variable=="hsa_bal" | variable=="tax_bal" |
+                              variable=="efc"), 
        aes(age, value)) +
     geom_line() +
     facet_grid(variable~., scales="free") +
