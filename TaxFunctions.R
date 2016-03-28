@@ -282,8 +282,8 @@ fafsa <- function(agi,p1_ei,p2_ei,ui,afi,fed_tax,
     return(efc)
 }
 # test
-fafsa(agi=50000,p1_ei=25000,p2_ei=25000,ui=0,afi=0,fed_tax=3000,
-      assets=0,bus_farm=0,hh=3,kic=1,age=47,st="Maryland")
+# fafsa(agi=50000,p1_ei=25000,p2_ei=25000,ui=0,afi=0,fed_tax=3000,
+#       assets=0,bus_farm=0,hh=3,kic=1,age=47,st="Maryland")
 ##########################################################
 ############## Withdrawal Optimization  ##################
 ##########################################################
